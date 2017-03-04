@@ -17,6 +17,16 @@ short iter = 0; // количество пересчетов
 short count_of_dec = 0; // количество шаров на сцене
 short delay = 1000/60; // минимальная задержка по времени между пересчетами
 
+int lenght(int begin, int end)
+{
+	if (begin * end < 0)
+	{
+		return end - begin >= 0 ? end - begin - 1 : end - begin + 1;
+			//-(abs(end - begin) - 1);
+	}
+	else return end - begin;
+}
+
 int intl(float a)
 {
 	if (a >= 0)
@@ -80,18 +90,33 @@ void mouseFunc(int button, int state, int x, int y)
 				main_line.next_point->x = x;
 				main_line.next_point->y = y;
 
-				short px = main_line.next_point->x - main_line.x;
-				short py = main_line.next_point->y - main_line.y;
+				short px = lenght(main_line.x, main_line.next_point->x);// main_line.next_point->x - main_line.x;
+				short py = lenght(main_line.y, main_line.next_point->y);// main_line.next_point->y - main_line.y;
 
 				if (abs(px) >= abs(py))
 				{
 					if (px >= 0)
 					{
 						float p = (float) py / px;
-						for (float i = main_line.x, j = main_line.y; i <= main_line.next_point->x; i++)
+						for (float i = main_line.x + 1, j = main_line.y; i < main_line.next_point->x; i++)
 						{
-							bool flag = false;
+							if (i == 0)
+								i++;
+							//bool flag = false;
+							/*if (j > 0 && j + p < 0)
+							{
+								j += p;
+								j = intl(j) + abs(j);
+							}*/
 							j += p;
+							if (j >= 0 && j < 1 && p < 0)
+							{
+								j--;
+							}
+							else if (j >= 0 && j < 1 && p > 0)
+							{
+								j++;
+							}
 							
 
 							draw_pixel(intl(j), intl(i));
@@ -99,7 +124,103 @@ void mouseFunc(int button, int state, int x, int y)
 
 						}
 					}
+					else if (px < 0)
+					{
+						float p = (float) -py / px;
+						for (float i = main_line.x - 1, j = main_line.y; i > main_line.next_point->x; i--)
+						{
+							if (i == 0)
+								i--;
+							//bool flag = false;
+							/*if (j > 0 && j + p < 0)
+							{
+							j += p;
+							j = intl(j) + abs(j);
+							}*/
+							j += p;
+							if (j >= 0 && j < 1 && p < 0)
+							{
+								j--;
+							}
+							else if (j >= 0 && j < 1 && p > 0)
+							{
+								j++;
+							}
+
+
+							draw_pixel(intl(j), intl(i));
+
+
+						}
+					}
+
+
 				}
+				else
+				if (abs(px) < abs(py))
+				{
+					if (py >= 0)
+					{
+						float p = (float)px / py;
+						for (float i = main_line.y + 1, j = main_line.x; i < main_line.next_point->y; i++)
+						{
+							if (i == 0)
+								i++;
+							//bool flag = false;
+							/*if (j > 0 && j + p < 0)
+							{
+							j += p;
+							j = intl(j) + abs(j);
+							}*/
+							j += p;
+							if (j >= 0 && j < 1 && p < 0)
+							{
+								j--;
+							}
+							else if (j >= 0 && j < 1 && p > 0)
+							{
+								j++;
+							}
+
+
+							draw_pixel(intl(i), intl(j));
+
+
+						}
+					}
+					else if (py < 0)
+					{
+						float p = (float)-px / py;
+						for (float i = main_line.y - 1, j = main_line.x; i > main_line.next_point->y; i--)
+						{
+							if (i == 0)
+								i--;
+							//bool flag = false;
+							/*if (j > 0 && j + p < 0)
+							{
+							j += p;
+							j = intl(j) + abs(j);
+							}*/
+							j += p;
+							if (j >= 0 && j < 1 && p < 0)
+							{
+								j--;
+							}
+							else if (j >= 0 && j < 1 && p > 0)
+							{
+								j++;
+							}
+
+
+							draw_pixel(intl(i), intl(j));
+
+
+						}
+					}
+
+
+				}
+
 			}
 
 			glutPostRedisplay();
@@ -281,6 +402,14 @@ int main(int argc, char ** argv)
 		for (int j = 0; j < 32; j++)
 			arr[i][j] = false;
 	
+	float j = 0.25;
+	float p = -0.5;
+	if (j > 0 && j + p < 0)
+	{
+		j += p;
+		j = intl(j) + j;
+	}
+	cout << j;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
@@ -298,5 +427,7 @@ int main(int argc, char ** argv)
 	time_fps = time0;
 	glutMainLoop();
 	//draw_pixel(1, 1);
+
+	delete main_line.next_point;
 	return 0;
 }
