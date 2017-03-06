@@ -8,15 +8,16 @@ using namespace std;
 bool is_line_on_screen = false;
 bool arr[20][32];
 bool arr1[20][32];
-short w = 32, h = 20, bw = 304, bh = 152;
+//short w = 32, h = 20, bw = 304, bh = 152;
 GLint width = 800, height = 400;
 short x_centre = 400, y_centre = 232;
-bool display = false;
-long time0 = 0;
-long time_fps = 0;
-short iter = 0; // количество пересчетов
-short count_of_dec = 0; // количество шаров на сцене
-short delay = 1000/60; // минимальная задержка по времени между пересчетами
+bool dda = 1, brez = 1;
+//bool display = false;
+//long time0 = 0;
+//long time_fps = 0;
+//short iter = 0; // количество пересчетов
+//short count_of_dec = 0; // количество шаров на сцене
+//short delay = 1000/60; // минимальная задержка по времени между пересчетами
 
 int lenght(int begin, int end)
 {
@@ -630,7 +631,28 @@ void mouseFunc(int button, int state, int x, int y)
 				return;
 			}
 			if (is_line_on_screen)
+			{
+				if (dda && brez)
+				{
+					brez = 0;
+					Initialize(width, height);
+					Display();
+				}
+				else if (dda)
+				{
+					dda = 0; brez = 1;
+					Initialize(width, height);
+					Display();
+				}
+				else if (brez)
+				{
+					dda = 1;
+					Initialize(width, height);
+					Display();
+				}
 				return;
+			}
+				
 			x -= x_centre;
 			y -= y_centre;
 			
@@ -724,8 +746,10 @@ void mouseFunc(int button, int state, int x, int y)
 				DDA(main_line.x, main_line.y, main_line.next_point->x, main_line.next_point->y);
 				Brezenhem(main_line.x, main_line.y, main_line.next_point->x, main_line.next_point->y);
 				arr[main_line.y > 0 ? 10 - main_line.y : 9 - main_line.y][main_line.x > 0 ? 15 + main_line.x : 16 + main_line.x] = 0;
+				arr1[main_line.y > 0 ? 10 - main_line.y : 9 - main_line.y][main_line.x > 0 ? 15 + main_line.x : 16 + main_line.x] = 0;
 				draw_pixel(main_line.y, main_line.x, 0);
 				arr[main_line.next_point->y > 0 ? 10 - main_line.next_point->y : 9 - main_line.next_point->y][main_line.next_point->x > 0 ? 15 + main_line.next_point->x : 16 + main_line.next_point->x] = 0;
+				arr1[main_line.next_point->y > 0 ? 10 - main_line.next_point->y : 9 - main_line.next_point->y][main_line.next_point->x > 0 ? 15 + main_line.next_point->x : 16 + main_line.next_point->x] = 0;
 				draw_pixel(main_line.next_point->y, main_line.next_point->x, 0);
 				delete main_line.next_point;
 				main_line.next_point = NULL;
@@ -768,8 +792,71 @@ void draw_pixel(int y, int x, short mode)
 		glFlush();
 		return;
 	}
+	if (mode == 2)
+	{
+		glColor3f((float)255 / 255, (float)64 / 255, (float)0 / 255);
+		glBegin(GL_POINTS);
+		for (int i = 0; i < 15; i++)
+			for (int j = 0; j < 15; j++)
+			{
+				if (y > 0 && x > 0)
+					glVertex2f(x_centre + (x - 1) * 16 + i, y_centre + (y - 1) * 16 + j + 1);
+				else if (y < 0 && x < 0)
+					glVertex2f(x_centre + x * 16 + i, y_centre + y * 16 + j + 1);
+				else if (y < 0)
+					glVertex2f(x_centre + (x - 1) * 16 + i, y_centre + y * 16 + j + 1);
+				else if (x < 0)
+					glVertex2f(x_centre + x * 16 + i, y_centre + (y - 1) * 16 + j + 1);
+			}
 
-	glColor3f((float)arr[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x]*255 / 255, (float)64 / 255, (float)arr1[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] *255 / 255);
+		glEnd();
+		glFlush();
+		return;
+	}
+	if (mode == 3)
+	{
+		glColor3f((float)0 / 255, (float)64 / 255, (float)255 / 255);
+		glBegin(GL_POINTS);
+		for (int i = 0; i < 15; i++)
+			for (int j = 0; j < 15; j++)
+			{
+				if (y > 0 && x > 0)
+					glVertex2f(x_centre + (x - 1) * 16 + i, y_centre + (y - 1) * 16 + j + 1);
+				else if (y < 0 && x < 0)
+					glVertex2f(x_centre + x * 16 + i, y_centre + y * 16 + j + 1);
+				else if (y < 0)
+					glVertex2f(x_centre + (x - 1) * 16 + i, y_centre + y * 16 + j + 1);
+				else if (x < 0)
+					glVertex2f(x_centre + x * 16 + i, y_centre + (y - 1) * 16 + j + 1);
+			}
+
+		glEnd();
+		glFlush();
+		return;
+	}
+	if (mode == 4)
+	{
+		glColor3f((float)255 / 255, (float)64 / 255, (float)255 / 255);
+		glBegin(GL_POINTS);
+		for (int i = 0; i < 15; i++)
+			for (int j = 0; j < 15; j++)
+			{
+				if (y > 0 && x > 0)
+					glVertex2f(x_centre + (x - 1) * 16 + i, y_centre + (y - 1) * 16 + j + 1);
+				else if (y < 0 && x < 0)
+					glVertex2f(x_centre + x * 16 + i, y_centre + y * 16 + j + 1);
+				else if (y < 0)
+					glVertex2f(x_centre + (x - 1) * 16 + i, y_centre + y * 16 + j + 1);
+				else if (x < 0)
+					glVertex2f(x_centre + x * 16 + i, y_centre + (y - 1) * 16 + j + 1);
+			}
+
+		glEnd();
+		glFlush();
+		return;
+	}
+
+	glColor3f((float)dda*arr[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x]*255 / 255, (float)64 / 255, (float)brez*arr1[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] *255 / 255);
 	glBegin(GL_POINTS);
 	for (int i = 0; i < 15; i++)
 		for (int j = 0; j < 15; j++)
@@ -787,6 +874,19 @@ void draw_pixel(int y, int x, short mode)
 	glEnd();
 
 	glFlush();
+}
+
+void renderBitmapString(
+	float x,
+	float y,
+	void *font,
+	char *string) {
+
+	char *c;
+	glRasterPos2f(x, y);
+	for (c = string; *c != '\0'; c++) {
+		glutBitmapCharacter(font, *c);
+	}
 }
 
 void Display()
@@ -808,6 +908,10 @@ void Display()
 		//arr[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] = true;
 	}
 
+	draw_pixel(-12, -14, 2); renderBitmapString(x_centre + -13 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "DDA");
+	draw_pixel(-12, -8, 3); renderBitmapString(x_centre + -7 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "Brezenhem"); //Brezenhem
+	draw_pixel(-12, 4, 4); renderBitmapString(x_centre + 4 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "DDA + Brezenhem");
+
 	if (is_line_on_screen)
 	{
 		glColor3f((float)21 / 255, (float)131 / 255, (float)240 / 255);
@@ -827,8 +931,8 @@ void Display()
 
 	glFlush();
 	//draw_pixel(0, 0);
-	time0 = clock();
-	display = true;
+	//time0 = clock();
+	//display = true;
 }
 
 void Initialize(int w, int h)
@@ -874,7 +978,7 @@ void Initialize(int w, int h)
 
 
 
-void Idle()
+/*void Idle()
 {
 	if (clock() - time0 < delay) // задержка установлена таким образом, чтобы наибольшее число
 		return;					// перерисовок равнялось 200
@@ -886,9 +990,9 @@ void Idle()
 
 	glutPostRedisplay();
 	
-}
+}*/
 
-void changeSize(int w, int h) {
+/*void changeSize(int w, int h) {
 	display = false;
 	// предупредим деление на ноль
 	// если окно сильно перетянуто будет
@@ -914,7 +1018,7 @@ void changeSize(int w, int h) {
 		Display();
 	cout << width << " " << height << endl;
 
-}
+}*/
 
 int main(int argc, char ** argv)
 {
@@ -939,8 +1043,8 @@ int main(int argc, char ** argv)
 	//glutReshapeFunc(changeSize);
 
 	glutMouseFunc(mouseFunc);
-	time0 = clock();
-	time_fps = time0;
+	//time0 = clock();
+	//time_fps = time0;
 	glutMainLoop();
 	//draw_pixel(1, 1);
 
