@@ -1,30 +1,23 @@
 #include <GL/freeglut.h>
 #include <iostream>
 #include <ctime>
-#include <list>
 
 using namespace std;
 
 bool is_line_on_screen = false;
 bool arr[20][32];
 bool arr1[20][32];
-//short w = 32, h = 20, bw = 304, bh = 152;
+
 GLint width = 800, height = 400;
 short x_centre = 400, y_centre = 232;
 bool dda = 1, brez = 1;
-//bool display = false;
-//long time0 = 0;
-//long time_fps = 0;
-//short iter = 0; // количество пересчетов
-//short count_of_dec = 0; // количество шаров на сцене
-//short delay = 1000/60; // минимальная задержка по времени между пересчетами
+
 
 int lenght(int begin, int end)
 {
 	if (begin * end < 0)
 	{
 		return end - begin >= 0 ? end - begin - 1 : end - begin + 1;
-			//-(abs(end - begin) - 1);
 	}
 	else return end - begin;
 }
@@ -81,12 +74,9 @@ void DDA(short x0, short y0, short x1, short y1)
 				if (arr[y][x] == 1)
 				{
 					arr[y][x] = 0;
-					//draw_pixel(y > 9 ? 9 - y : 10 - y, x > 15 ? x - 15 : x - 16, 0);
 					continue;
 				}
 				arr[y][x] = 1;
-				//arr[y][x] = -arr[y][x];
-				//draw_pixel(intl(j), intl(i));
 			}
 		}
 		else if (px < 0)
@@ -107,7 +97,6 @@ void DDA(short x0, short y0, short x1, short y1)
 					j++;
 				}
 
-				//arr[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] = true;
 				short y = intl(j);
 				short x = intl(i);
 				y = y > 0 ? 10 - y : 9 - y;
@@ -115,12 +104,9 @@ void DDA(short x0, short y0, short x1, short y1)
 				if (arr[y][x] == 1)
 				{
 					arr[y][x] = 0;
-					//draw_pixel(y > 9 ? 9 - y : 10 - y, x > 15 ? x - 15 : x - 16, 0);
 					continue;
 				}
 				arr[y][x] = 1;
-				//arr[y][x] = -arr[y][x];
-				//draw_pixel(intl(j), intl(i));
 			}
 		}
 	}
@@ -152,12 +138,9 @@ void DDA(short x0, short y0, short x1, short y1)
 					if (arr[y][x] == 1)
 					{
 						arr[y][x] = 0;
-						//draw_pixel(y > 9 ? 9 - y : 10 - y, x > 15 ? x - 15 : x - 16, 0);
 						continue;
 					}
 					arr[y][x] = 1;
-					//arr[y][x] = -arr[y][x];
-					//draw_pixel(intl(i), intl(j));
 				}
 			}
 			else if (py < 0)
@@ -185,12 +168,9 @@ void DDA(short x0, short y0, short x1, short y1)
 					if (arr[y][x] == 1)
 					{
 						arr[y][x] = 0;
-						//draw_pixel(y > 9 ? 9 - y : 10 - y, x > 15 ? x - 15 : x - 16, 0);
 						continue;
 					}
 					arr[y][x] = 1;
-					//arr[y][x] = -arr[y][x];
-					//draw_pixel(intl(i), intl(j));
 				}
 			}
 		}
@@ -621,11 +601,7 @@ void mouseFunc(int button, int state, int x, int y)
 	{
 		if (state == GLUT_UP)
 		{
-			
-			//system("cls");
-			
 			y = 400 - y;
-
 			if ((y < 72 || y > 392) || (x < 144 || x > 656))
 			{
 				return;
@@ -661,22 +637,14 @@ void mouseFunc(int button, int state, int x, int y)
 			x /= 16;
 			x > 0 ? x++ : x < 0 ? x-- : x;
 			x == 0 ? temp == 1 ? x++ : x-- : x;
-			//x++;
+
 			y > 0 ? temp = 1 : temp = -1;
 			y /= 16;
 			y > 0 ? y++ : y < 0 ? y-- : y;
 			y == 0 ? temp == 1 ? y++ : y-- : y;
-			//y++;
-			//draw_pixel(y, x);
 			
 			arr[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] = true;
 			arr1[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] = true;
-			/*for (int i = 0; i < 20; i++)
-			{
-				for (int j = 0; j < 32; j++)
-					cout << arr[i][j] << ' ';
-				cout << endl;
-			}*/
 
 			if (main_line.next_point == NULL)
 			{
@@ -691,24 +659,12 @@ void mouseFunc(int button, int state, int x, int y)
 
 				is_line_on_screen = true;
 				main_line.next_point->x = x;
-				main_line.next_point->y = y;
-
-				
+				main_line.next_point->y = y;				
 
 				DDA(main_line.x, main_line.y, main_line.next_point->x, main_line.next_point->y);
 
 				Brezenhem(main_line.x, main_line.y, main_line.next_point->x, main_line.next_point->y);
-
-				/*for (int i = 0; i < 20; i++)
-				{
-					for (int j = 0; j < 32; j++)
-						cout << arr1[i][j] << ' ';
-					cout << endl;
-				}*/
-
-
 			}
-
 			glutPostRedisplay();
 		}
 	}
@@ -716,9 +672,6 @@ void mouseFunc(int button, int state, int x, int y)
 	{
 		if (state == GLUT_UP)
 		{
-			
-			//system("cls");
-			
 			y = 400 - y;
 			if ((y < 72 || y > 392) || (x < 144 || x > 656))
 			{
@@ -732,13 +685,12 @@ void mouseFunc(int button, int state, int x, int y)
 			x /= 16;
 			x > 0 ? x++ : x < 0 ? x-- : x;
 			x == 0 ? temp == 1 ? x++ : x-- : x;
-			//x++;
+
 			y > 0 ? temp = 1 : temp = -1;
 			y /= 16;
 			y > 0 ? y++ : y < 0 ? y-- : y;
 			y == 0 ? temp == 1 ? y++ : y-- : y;
-			//y++;
-			//draw_pixel(y, x);
+
 			y = y > 0 ? 10 - y : 9 - y;
 			x = x > 0 ? 15 + x : 16 + x;
 			if (arr[y][x] == 1 || arr1[y][x] == 1)
@@ -758,12 +710,6 @@ void mouseFunc(int button, int state, int x, int y)
 				Display();
 			}
 			arr[y][x] = 0;
-			
-
-			//glutPostRedisplay();
-			//glutPostRedisplay();
-			//draw_pixel(y > 9 ? 9 - y : 10 - y, x > 15 ? x - 15 : x - 16, 0);
-
 		}
 	}
 }
@@ -876,26 +822,18 @@ void draw_pixel(int y, int x, short mode)
 	glFlush();
 }
 
-void renderBitmapString(
-	float x,
-	float y,
-	void *font,
-	char *string) {
-
+void renderBitmapString(float x, float y, void *font, char *string)
+{
 	char *c;
 	glRasterPos2f(x, y);
-	for (c = string; *c != '\0'; c++) {
+	for (c = string; *c != '\0'; c++)
+	{
 		glutBitmapCharacter(font, *c);
 	}
 }
 
 void Display()
 {
-	/*if (clock() - time0 < delay) 
-		return;*/
-	
-	//glClear(GL_COLOR_BUFFER_BIT);
-	
 	glColor3f((float)255 / 255, (float)0 / 255, (float)0 / 255);
 
 	for (int i = 0; i < 20; i++)
@@ -905,7 +843,6 @@ void Display()
 			{
 				draw_pixel(i > 9 ? 9 - i: 10 - i, j > 15 ? j - 15: j - 16);
 			}
-		//arr[y > 0 ? 10 - y : 9 - y][x > 0 ? 15 + x : 16 + x] = true;
 	}
 
 	draw_pixel(-12, -14, 2); renderBitmapString(x_centre + -13 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "DDA");
@@ -930,9 +867,6 @@ void Display()
 	}
 
 	glFlush();
-	//draw_pixel(0, 0);
-	//time0 = clock();
-	//display = true;
 }
 
 void Initialize(int w, int h)
@@ -944,18 +878,16 @@ void Initialize(int w, int h)
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f((float)192 / 255, (float)192 / 255, (float)192 / 255);
-	//glColor3f((float)0 / 255, (float)255 / 255, (float)0 / 255);
-
 
 	glBegin(GL_LINES);
 	for (int i = 0; i < 33; i++)
 	{
 		if (i == 16)
 			glColor3f((float)0 / 255, (float)255 / 255, (float)51 / 255);
+
 		glVertex2f(144 + 16 * i, 40 + 32 + 0);
 		glVertex2f(144 + 16 * i, 40 + 32 + 320);
-		//glVertex2f(0, 16 * i);
-		//glVertex2f(width, 16 * i);
+
 		if (i == 16)
 			glColor3f((float)192 / 255, (float)192 / 255, (float)192 / 255);
 	}
@@ -963,10 +895,10 @@ void Initialize(int w, int h)
 	{
 		if (i == 10)
 			glColor3f((float)0 / 255, (float)255 / 255, (float)51 / 255);
-		//glVertex2f(16 * i, 0);
-		//glVertex2f(16 * i, height);
+		
 		glVertex2f(144 + 0, 40 + 32 + 16 * i);
 		glVertex2f(144 + 512, 40 + 32 + 16 * i);
+
 		if (i == 10)
 			glColor3f((float)192 / 255, (float)192 / 255, (float)192 / 255);
 
@@ -976,50 +908,6 @@ void Initialize(int w, int h)
 	glFlush();
 }
 
-
-
-/*void Idle()
-{
-	if (clock() - time0 < delay) // задержка установлена таким образом, чтобы наибольшее число
-		return;					// перерисовок равнялось 200
-
-	
-		
-	
-
-
-	glutPostRedisplay();
-	
-}*/
-
-/*void changeSize(int w, int h) {
-	display = false;
-	// предупредим деление на ноль
-	// если окно сильно перетянуто будет
-	
-
-	width = w;
-	height = h;
-
-	// используем матрицу проекции
-	glMatrixMode(GL_PROJECTION);
-
-	// Reset матрицы
-	glLoadIdentity();
-
-	// определяем окно просмотра
-	glViewport(0, 0, w, h);
-
-	
-
-	gluOrtho2D(0, w, 0, h);
-	
-	while (!display)
-		Display();
-	cout << width << " " << height << endl;
-
-}*/
-
 int main(int argc, char ** argv)
 {
 	setlocale(LC_ALL, "");
@@ -1027,9 +915,10 @@ int main(int argc, char ** argv)
 
 	for (int i = 0; i < 20; i++)
 		for (int j = 0; j < 32; j++)
+		{
 			arr[i][j] = false;
-	
-	
+			arr1[i][j] = false;
+		}	
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
@@ -1038,15 +927,8 @@ int main(int argc, char ** argv)
 	glutCreateWindow("Яковенко В.В. АВТ-615");
 	glutDisplayFunc(Display);
 	Initialize(width, height);
-	//glutIdleFunc(Idle);
-
-	//glutReshapeFunc(changeSize);
-
 	glutMouseFunc(mouseFunc);
-	//time0 = clock();
-	//time_fps = time0;
 	glutMainLoop();
-	//draw_pixel(1, 1);
 
 	delete main_line.next_point;
 	return 0;
