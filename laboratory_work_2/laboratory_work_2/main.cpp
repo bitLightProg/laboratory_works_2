@@ -33,7 +33,7 @@ struct student
 	//char leaving_date[11];
 };
 
-student **table;
+student **table = NULL;
 
 struct student_list
 {
@@ -161,7 +161,7 @@ int read_file()
 	unsigned char ch;
 	while (!fin.eof())
 	{
-		fin >> d1 >> ch;
+		fin >> d1 >> s_name;
 		//while (!fin.eof())
 		//{
 			fin >> s_name;
@@ -304,8 +304,8 @@ int print()
 int compare_s_name(const void* v1, const void* v2)
 {
 	
-	const student* s1 = ((student*)(v1));
-	const student* s2 = ((student*)(v2));
+	const student* s1 = *((student**)(v1));
+	const student* s2 = *((student**)(v2));
 	short n = strlen((char*) s1->second_name);
 	short i;
 	for (i = 0; i <= n; i++)
@@ -321,6 +321,92 @@ int compare_s_name(const void* v1, const void* v2)
 	}
 	
 	return 0;
+}
+
+int compare_e_date(const void* v1, const void* v2)
+{
+
+	const student* s1 = *((student**)(v1));
+	const student* s2 = *((student**)(v2));
+
+	if (s1->e_year < s2->e_year)
+		return -1;
+	else if (s1->e_year > s2->e_year)
+		return 1;
+	else if (s1->e_year == s2->e_year)
+	{
+		if (s1->e_month < s2->e_month)
+			return -1;
+		else if (s1->e_month > s2->e_month)
+			return 1;
+		else if (s1->e_month == s2->e_month)
+		{
+			if (s1->e_day < s2->e_day)
+				return -1;
+			else if (s1->e_day > s2->e_day)
+				return 1;
+			else
+			{
+				short i;
+				short n = strlen((char*)s1->second_name);
+				for (i = 0; i <= n; i++)
+				{
+					if (s1->second_name[i] < s2->second_name[i])
+					{
+						return -1;
+					}
+					else if (s1->second_name[i] > s2->second_name[i])
+					{
+						return 1;
+					}
+				}
+				return 0;
+			}
+		}
+	}	
+}
+
+int compare_l_date(const void* v1, const void* v2)
+{
+
+	const student* s1 = *((student**)(v1));
+	const student* s2 = *((student**)(v2));
+
+	if (s1->l_year < s2->l_year)
+		return -1;
+	else if (s1->l_year > s2->l_year)
+		return 1;
+	else if (s1->l_year == s2->l_year)
+	{
+		if (s1->l_month < s2->l_month)
+			return -1;
+		else if (s1->l_month > s2->l_month)
+			return 1;
+		else if (s1->l_month == s2->l_month)
+		{
+			if (s1->l_day < s2->l_day)
+				return -1;
+			else if (s1->l_day > s2->l_day)
+				return 1;
+			else
+			{
+				short i;
+				short n = strlen((char*)s1->second_name);
+				for (i = 0; i <= n; i++)
+				{
+					if (s1->second_name[i] < s2->second_name[i])
+					{
+						return -1;
+					}
+					else if (s1->second_name[i] > s2->second_name[i])
+					{
+						return 1;
+					}
+				}
+				return 0;
+			}
+		}
+	}
 }
 
 int sort()
@@ -344,7 +430,7 @@ int sort()
 	}
 
 	table_size = student_count;
-	student **table = new student*[table_size];
+	table = new student*[table_size];
 
 	short i = 0;
 
@@ -360,23 +446,23 @@ int sort()
 	switch (choose)
 	{
 	case 1:
-		cout << sizeof(*table);
+		//cout << sizeof(table[i]) << endl;
 		qsort(table, table_size, sizeof(table[i]), compare_s_name);
 		break;
 	case 2:
-
+		qsort(table, table_size, sizeof(table[i]), compare_e_date);
 		break;
 	case 3:
 
 		break;
 	}
-	for (i = 0; i < table_size; i++)
+	/*for (i = 0; i < table_size; i++)
 	{
 		//table + i;
 		//cout << *(table + i)->second_name << endl;
 		cout << table[i]->second_name << endl;
 		
-	}
+	}*/
 	cout << "Сортировка таблицы успешно завершена." << endl;
 	system("pause");
 
@@ -385,6 +471,21 @@ int sort()
 
 
 	
+}
+
+int find()
+{
+	short choose;
+	system("cls");
+	cout << "0. Выход из функции.\n"
+		<< "1. Сортировка по фамилиям студентов.\n"
+		<< "2. Сортировка по дате поступления.\n"
+		<< "3. Сортировка по дате отчисления.\n";
+	cin >> choose;
+
+	if (!choose)
+		return 0;
+	return 0;
 }
 
 int main()
@@ -401,6 +502,7 @@ int main()
 	arr[2] = read_file;
 	arr[3] = print;
 	arr[4] = sort;
+	arr[5] = find;
 
 	do
 	{
