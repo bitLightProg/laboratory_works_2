@@ -29,20 +29,38 @@ struct student
 	short l_year;
 	short l_month;
 	short l_day;
-	//char endtance_date[11];
-	//char leaving_date[11];
 };
 
-student **table = NULL;
+student **table = NULL; // Таблица указателей на студентов, используемая для сортировки
 
 struct student_list
 {
 	student_list* next_student = NULL;
 	student this_student;
 
-} main_list;
+} main_list; // Порядковый список студентов
 
-int student_add()
+int student_set(student_list &st, unsigned char* const &s_name, short &d1, short &m1, short &y1, short &d2, short &m2, short &y2) // Установка значений для студентов
+{
+	st.this_student.e_day = d1;
+	st.this_student.e_month = m1;
+	st.this_student.e_year = y1;
+	st.this_student.l_day = d2;
+	st.this_student.l_month = m2;
+	st.this_student.l_year = y2;
+	short i = 1 + strlen((char*)s_name);
+	st.this_student.second_name = new unsigned char[i];
+
+	for (short j = 0; j < i; j++)
+	{
+		st.this_student.second_name[j] = s_name[j];
+	}
+	st.this_student.second_name[i] = '\0';
+
+	return 0;
+}
+
+int student_add() // Добавление студента в список с помощью клавиатуры
 {
 	student_list *ins_student = &main_list;
 	system("cls");
@@ -65,19 +83,7 @@ int student_add()
 	
 	if (student_count == 0)
 	{
-		main_list.this_student.e_day = d1;
-		main_list.this_student.e_month = m1;
-		main_list.this_student.e_year = y1;
-		main_list.this_student.l_day = d2;
-		main_list.this_student.l_month = m2;
-		main_list.this_student.l_year = y2;
-		main_list.this_student.second_name = new unsigned char[1 + strlen((char*) s_name)];
-
-		for (short j = 0; j < i; j++)
-		{
-			main_list.this_student.second_name[j] = s_name[j];
-		}
-		main_list.this_student.second_name[i] = '\0';
+		student_set(main_list, s_name, d1, m1, y1, d2, m2, y2);
 
 		student_count++;
 	}
@@ -88,34 +94,32 @@ int student_add()
 
 		student_list *new_student = new student_list;
 
-		new_student->this_student.e_day = d1;
-		new_student->this_student.e_month = m1;
-		new_student->this_student.e_year = y1;
-		new_student->this_student.l_day = d2;
-		new_student->this_student.l_month = m2;
-		new_student->this_student.l_year = y2;
-		new_student->this_student.second_name = new unsigned char[1 + strlen((char*)s_name)];
-
-		for (short j = 0; j < i; j++)
-		{
-			new_student->this_student.second_name[j] = s_name[j];
-		}
-		new_student->this_student.second_name[i] = '\0';
+		student_set(*new_student, s_name, d1, m1, y1, d2, m2, y2);
 
 		ins_student->next_student = new_student;
 
 		student_count++;
 	}
 	cout << "Студент по номеру " << student_count << " добавлен." << endl;
-	/*while (ins_student->next_student != NULL)
-		ins_student = ins_student->next_student;*/
+	
 	system("pause");
 	return 0;
 
 }
 
-int print_file()
+int student_print(ostream &fout, student &st, short i) // Вывод данных студента
 {
+	fout << i << ". " << st.second_name << " " << st.e_day << "."
+		<< st.e_month << "." << st.e_year << " "
+		<< st.l_day << "." << st.l_month << "."
+		<< st.l_year;
+	fout << endl;
+
+	return 0;
+}
+
+int print_file() // Вывод студентов в файл
+{				// TODO: добавить вывод таблицы
 	system("cls");
 	ofstream fout("out_table.txt");
 
@@ -123,11 +127,7 @@ int print_file()
 	student_list *s_student = &main_list;
 	while (s_student->next_student != NULL)
 	{
-		fout << i++ << ". " << s_student->this_student.second_name << " " << s_student->this_student.e_day << "."
-			<< s_student->this_student.e_month << "." << s_student->this_student.e_year << " "
-			<< s_student->this_student.l_day << "." << s_student->this_student.l_month << "."
-			<< s_student->this_student.l_year;
-		fout << endl;
+		student_print(fout, s_student->this_student, i++);
 
 		s_student = s_student->next_student;
 	}
@@ -137,19 +137,14 @@ int print_file()
 		system("pause");
 		return 1;
 	}
-
-	fout << i++ << ". " << s_student->this_student.second_name << " " << s_student->this_student.e_day << "."
-		<< s_student->this_student.e_month << "." << s_student->this_student.e_year << " "
-		<< s_student->this_student.l_day << "." << s_student->this_student.l_month << "."
-		<< s_student->this_student.l_year;
-	fout << endl;
+	student_print(fout, s_student->this_student, i++);
 
 	cout << "Вывод данных в файл успешно завершен." << endl;
 	system("pause");
 	return 0;
 }
 
-int read_file()
+int read_file() // Считывание студентов из файла
 {
 	system("cls");
 	ifstream fin("in_table.txt");
@@ -161,38 +156,16 @@ int read_file()
 	unsigned char ch;
 	while (!fin.eof())
 	{
-		fin >> d1 >> s_name;
-		//while (!fin.eof())
-		//{
-			fin >> s_name;
-			/*if (s_name[i] == ' ' || s_name[i] == '\n')
-			{
-				s_name[i] = '\0';
-				break;
-			}*/
-			//i++;
-		//}
-		fin >> d1 >> ch >> m1 >> ch >> y1;
-		fin >> d2 >> ch >> m2 >> ch >> y2;
-
+		fin >> d1 >> s_name; // Считывание порядкового номера и символов после него до пробела
 		
+		fin >> s_name;
+			
+		fin >> d1 >> ch >> m1 >> ch >> y1; // Считывание дат с единичным непробельным разделителем
+		fin >> d2 >> ch >> m2 >> ch >> y2;		
 
 		if (student_count == 0)
 		{
-			main_list.this_student.e_day = d1;
-			main_list.this_student.e_month = m1;
-			main_list.this_student.e_year = y1;
-			main_list.this_student.l_day = d2;
-			main_list.this_student.l_month = m2;
-			main_list.this_student.l_year = y2;
-			i = 1 + strlen((char*)s_name);
-			main_list.this_student.second_name = new unsigned char[i];
-
-			for (short j = 0; j < i; j++)
-			{
-				main_list.this_student.second_name[j] = s_name[j];
-			}
-			main_list.this_student.second_name[i] = '\0';
+			student_set(main_list, s_name, d1, m1, y1, d2, m2, y2);
 
 			student_count++;
 		}
@@ -203,27 +176,13 @@ int read_file()
 
 			student_list *new_student = new student_list;
 
-			new_student->this_student.e_day = d1;
-			new_student->this_student.e_month = m1;
-			new_student->this_student.e_year = y1;
-			new_student->this_student.l_day = d2;
-			new_student->this_student.l_month = m2;
-			new_student->this_student.l_year = y2;
-			i = 1 + strlen((char*)s_name);
-			new_student->this_student.second_name = new unsigned char[i];
-
-			for (short j = 0; j < i; j++)
-			{
-				new_student->this_student.second_name[j] = s_name[j];
-			}
-			new_student->this_student.second_name[i] = '\0';
+			student_set(*new_student, s_name, d1, m1, y1, d2, m2, y2);
 
 			ins_student->next_student = new_student;
 
 			student_count++;
 		}
 		cout << "Студент по номеру " << student_count << " добавлен." << endl;
-		//fin >> ch;
 	}
 
 	system("pause");
@@ -231,7 +190,7 @@ int read_file()
 	return 0;
 }
 
-int print()
+int print() // Вывод на экран
 {
 	system("cls");
 	short choose;
@@ -252,11 +211,7 @@ int print()
 		student_list *s_student = &main_list;
 		while (s_student->next_student != NULL)
 		{
-			cout << i++ << ". " << s_student->this_student.second_name << " " << s_student->this_student.e_day << "."
-				<< s_student->this_student.e_month << "." << s_student->this_student.e_year << " "
-				<< s_student->this_student.l_day << "." << s_student->this_student.l_month << "."
-				<< s_student->this_student.l_year;
-			cout << endl;
+			student_print(cout, s_student->this_student, i++);
 
 			s_student = s_student->next_student;
 		}
@@ -266,12 +221,7 @@ int print()
 			system("pause");
 			return 1;
 		}
-
-		cout << i++ << ". " << s_student->this_student.second_name << " " << s_student->this_student.e_day << "."
-			<< s_student->this_student.e_month << "." << s_student->this_student.e_year << " "
-			<< s_student->this_student.l_day << "." << s_student->this_student.l_month << "."
-			<< s_student->this_student.l_year;
-		cout << endl;
+		student_print(cout, s_student->this_student, i++);
 
 		system("pause");
 
@@ -288,11 +238,7 @@ int print()
 
 		for (i = 0; i < table_size; i++)
 		{
-			cout << i + 1 << ". " << table[i]->second_name << " " << table[i]->e_day << "."
-				<< table[i]->e_month << "." << table[i]->e_year << " "
-				<< table[i]->l_day << "." << table[i]->l_month << "."
-				<< table[i]->l_year;
-			cout << endl;
+			student_print(cout, *(table[i]), i + 1);
 		}
 		system("pause");
 		return 0;
@@ -301,9 +247,8 @@ int print()
 	
 }
 
-int compare_s_name(const void* v1, const void* v2)
-{
-	
+int compare_s_name(const void* v1, const void* v2) // Функция сравнения фамилий
+{	
 	const student* s1 = *((student**)(v1));
 	const student* s2 = *((student**)(v2));
 	short n = strlen((char*) s1->second_name);
@@ -323,9 +268,8 @@ int compare_s_name(const void* v1, const void* v2)
 	return 0;
 }
 
-int compare_e_date(const void* v1, const void* v2)
+int compare_e_date(const void* v1, const void* v2) // Функция сравнения дат поступления
 {
-
 	const student* s1 = *((student**)(v1));
 	const student* s2 = *((student**)(v2));
 
@@ -347,28 +291,14 @@ int compare_e_date(const void* v1, const void* v2)
 				return 1;
 			else
 			{
-				short i;
-				short n = strlen((char*)s1->second_name);
-				for (i = 0; i <= n; i++)
-				{
-					if (s1->second_name[i] < s2->second_name[i])
-					{
-						return -1;
-					}
-					else if (s1->second_name[i] > s2->second_name[i])
-					{
-						return 1;
-					}
-				}
-				return 0;
+				return compare_s_name(v1, v2); // Сортировка по фамилии, если даты равны
 			}
 		}
 	}	
 }
 
-int compare_l_date(const void* v1, const void* v2)
+int compare_l_date(const void* v1, const void* v2) // Функция сортировки по дате отчисления
 {
-
 	const student* s1 = *((student**)(v1));
 	const student* s2 = *((student**)(v2));
 
@@ -390,26 +320,13 @@ int compare_l_date(const void* v1, const void* v2)
 				return 1;
 			else
 			{
-				short i;
-				short n = strlen((char*)s1->second_name);
-				for (i = 0; i <= n; i++)
-				{
-					if (s1->second_name[i] < s2->second_name[i])
-					{
-						return -1;
-					}
-					else if (s1->second_name[i] > s2->second_name[i])
-					{
-						return 1;
-					}
-				}
-				return 0;
+				return compare_s_name(v1, v2); // Соритровка по фамилии, если даты равны
 			}
 		}
 	}
 }
 
-int sort()
+int sort() // Функция сортировки
 {
 	short choose;
 
@@ -446,34 +363,22 @@ int sort()
 	switch (choose)
 	{
 	case 1:
-		//cout << sizeof(table[i]) << endl;
-		qsort(table, table_size, sizeof(table[i]), compare_s_name);
+		qsort(table, table_size, sizeof(table[i]), compare_s_name); // По фамилии
 		break;
 	case 2:
-		qsort(table, table_size, sizeof(table[i]), compare_e_date);
+		qsort(table, table_size, sizeof(table[i]), compare_e_date); // По поступлению
 		break;
 	case 3:
-
+		qsort(table, table_size, sizeof(table[i]), compare_l_date); // По отчислению
 		break;
 	}
-	/*for (i = 0; i < table_size; i++)
-	{
-		//table + i;
-		//cout << *(table + i)->second_name << endl;
-		cout << table[i]->second_name << endl;
-		
-	}*/
 	cout << "Сортировка таблицы успешно завершена." << endl;
 	system("pause");
 
-	return 0;
-
-
-
-	
+	return 0;	
 }
 
-int find()
+int find() // Поиск
 {
 	short choose;
 	system("cls");
@@ -490,7 +395,6 @@ int find()
 
 int main()
 {
-	//setlocale(LC_ALL, "");
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
@@ -527,13 +431,13 @@ int main()
 	student_list *this_student = main_list.next_student;
 	student_list *next_student;
 
-	while (this_student != NULL && this_student->next_student != NULL)
+	while (this_student != NULL && this_student->next_student != NULL) // Отчистка списка студентов
 	{
 		next_student = this_student->next_student;
 			delete this_student;
 		student_count--;
 		this_student = next_student;
-	}
+	}								// TODO: проверить на актуальность
 	if (this_student != &main_list)
 	{
 		delete this_student;
