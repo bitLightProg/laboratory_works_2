@@ -443,6 +443,8 @@ int main()
 		delete this_student;
 		student_count--;
 	}
+
+	delete[] table;
 		
 	return 0;
 }
