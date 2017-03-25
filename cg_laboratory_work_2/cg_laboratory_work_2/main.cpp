@@ -57,24 +57,10 @@ void pixelCircle(int centerX, int centerY, int x, int y)
 	{
 		arr[centerY + y][centerX - x] = 1;
 	}
-
-	//pixel->PutPixel(centerX + x, centerY + y);
-	//pixel->PutPixel(centerX + x, centerY - y);
-	//pixel->PutPixel(centerX - x, centerY - y);
-	//pixel->PutPixel(centerX - x, centerY + y);
-
 }
 
 void pixelCircleM(int centerX, int centerY, int x, int y)
 {
-	/*pixel->PutPixel(centerX + x, centerY + y);
-	pixel->PutPixel(centerX + y, centerY + x);
-	pixel->PutPixel(centerX + y, centerY - x);
-	pixel->PutPixel(centerX + x, centerY - y);
-	pixel->PutPixel(centerX - x, centerY - y);
-	pixel->PutPixel(centerX - y, centerY - x);
-	pixel->PutPixel(centerX - y, centerY + x);
-	pixel->PutPixel(centerX - x, centerY + y);*/
 	if (centerY + y < 20 && centerX + x < 32) 
 	{
 		arr1[centerY + y][centerX + x] = 1;
@@ -106,8 +92,7 @@ void pixelCircleM(int centerX, int centerY, int x, int y)
 	if (centerY + y < 20 && centerX - x >= 0)
 	{
 		arr1[centerY + y][centerX - x] = 1;
-	}
-	
+	}	
 }
 
 void BresenhamCircle(int centerX, int centerY, int radius)
@@ -139,9 +124,9 @@ void BresenhamCircle(int centerX, int centerY, int radius)
 	}
 }
 
-void MichinerCircle(int centerX, int centerY, int radius)
+void MichenerCircle(int centerX, int centerY, int radius)
 {
-	//Генерация окружности алгоритмом Минчера
+	//Генерация окружности алгоритмом Мичнера
 	int  x = 0;
 	int y = radius;
 	int d = 3 - 2 * radius;
@@ -175,35 +160,30 @@ void mouseFunc(int button, int state, int x, int y)
 			{
 				if (mic && brez)
 				{
-					brez = 0;
-					Initialize(width, height);
-					Display();
-				}
-				else if (mic)
-				{
-					mic = 0; brez = 1;
+					mic = 0;
 					Initialize(width, height);
 					Display();
 				}
 				else if (brez)
 				{
-					mic = 1;
+					brez = 0; mic = 1;
+					Initialize(width, height);
+					Display();
+				}
+				else if (mic)
+				{
+					brez = 1;
 					Initialize(width, height);
 					Display();
 				}
 				return;
 			}
-			//cout << y << " " << x << endl;
-
+			
 			x -= 144;
 			y -= 72;
 
-			//cout << y << " " << x << endl;
 			x /= 16;
 			y = 19 - y/16;
-
-			//cout << y << " " << x << endl;
-			
 
 			if (center_X == -1)
 			{
@@ -215,11 +195,9 @@ void mouseFunc(int button, int state, int x, int y)
 			else
 			{
 				int radius = sqrt(pow(x - center_X, 2) + pow(y - center_Y, 2));
-				cout << radius << endl;
 				r = radius;
-				//drawCircle(144 + center_X*16 + 8, 72 + center_Y*16 + 8, radius*16 + 8, 20, 0, 0, 255);
 				BresenhamCircle(center_X, center_Y, radius);
-				MichinerCircle(center_X, center_Y, radius);
+				MichenerCircle(center_X, center_Y, radius);
 			}
 
 			glutPostRedisplay();
@@ -235,17 +213,12 @@ void mouseFunc(int button, int state, int x, int y)
 				return;
 			}
 
-			//cout << y << " " << x << endl;
 			x -= 144;
 			y -= 72;
-
-			//cout << y << " " << x << endl;
 
 			x /= 16;
 			y = 19 - y / 16;
 
-			//cout << y << " " << x << endl;
-			
 			if (arr[y][x] == 1 || arr1[y][x] == 1)
 			{
 
@@ -289,13 +262,7 @@ void mouseFunc(int button, int state, int x, int y)
 
 				center_X = -1;
 				r = -1;
-				
-
-				
-				//Initialize(width, height);
-				//Display();
-			} 
-			
+			} 			
 		}
 	}
 }
@@ -355,12 +322,11 @@ void Display()
 	}
 
 	draw_pixel(-12, -14, 2); renderBitmapString(x_centre + -13 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "Brezenhem");
-	draw_pixel(-12, -6, 3); renderBitmapString(x_centre + -5 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "Michiner"); //Brezenhem
-	draw_pixel(-12, 4, 4); renderBitmapString(x_centre + 4 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "Michiner + Brezenhem");
+	draw_pixel(-12, -6, 3); renderBitmapString(x_centre + -5 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "Michener");
+	draw_pixel(-12, 4, 4); renderBitmapString(x_centre + 4 * 16 + 4, y_centre + -12 * 16 + 4, GLUT_BITMAP_9_BY_15, "Michener + Brezenhem");
 
 	if (r != -1)
 		drawCircle(144 + center_X * 16 + 7, 72 + (19 - center_Y) * 16 + 7, r * 16 + 9, 500, 4, 64, 255);
-
 	
 	glFlush();
 }

@@ -1,3 +1,5 @@
+// 9. Функция находит в строке самое первое (по алфавиту) слово.
+//С ее помощью реализовать размещение слов в выходной строке в алфавитном порядке.
 #include <iostream>
 #include <Windows.h>
 
@@ -9,8 +11,9 @@ unsigned char* seek_min(unsigned char* string)
 
 	unsigned char* first_word = NULL;
 	unsigned char* second_word = NULL;
+	unsigned char* pointer;
 
-	for (unsigned char* pointer = string; *pointer != '\0'; ++pointer)
+	for (pointer = string; *pointer != '\0'; ++pointer)
 	{
 		//cout << *pointer;
 		if (*pointer == ' ')
@@ -32,7 +35,7 @@ unsigned char* seek_min(unsigned char* string)
 
 		for (int i = 0; ; ++i)
 		{
-			if ( (*(first_word + i) > *(second_word + i))/* || (*(first_word + i) != *(second_word + i) && *(first_word + i) != ' ')*/ )
+			if ( (*(first_word + i) > *(second_word + i)) && (*(first_word + i) != *(second_word + i) && *(first_word + i) != ' ') )
 			{
 				first_word = second_word;
 				break;

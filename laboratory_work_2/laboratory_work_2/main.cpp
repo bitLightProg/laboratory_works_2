@@ -121,6 +121,16 @@ int student_print(ostream &fout, student &st, short i) // Вывод данных студента
 int print_file() // Вывод студентов в файл
 {				// TODO: добавить вывод таблицы
 	system("cls");
+
+	short choose;
+	cout << "0. Выход из функции.\n"
+		<< "1. Вывод порядкового списка студентов.\n"
+		<< "2. Вывод отсортированной ранее таблицы.\n";
+	cin >> choose;
+
+	if (!choose)
+		return 0;
+
 	ofstream fout("out_table.txt");
 
 	short i = 1;
@@ -390,6 +400,43 @@ int find() // Поиск
 
 	if (!choose)
 		return 0;
+
+	switch (choose)
+	{
+	case 1:
+		cout << "Введите фамилию студента. Поиск производится по длине с учетом двух опечаток." << endl;
+		char field[128];
+		cin >> field;
+		int field_length = strlen(field);
+		student_list *this_student = &main_list;
+		while (this_student != NULL)
+		{
+			int n = 0;
+			int this_length = strlen((char*)this_student->this_student.second_name);
+
+			if (field_length != this_length)
+			{
+				this_student = this_student->next_student;
+				continue;
+			}
+
+			for (int i = 0; i < field_length; i++)
+			{
+				
+				if (field[i] != this_student->this_student.second_name[i])
+					n++;
+
+			}
+			if (n > 2)
+				continue;
+				
+		}
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	}
 	return 0;
 }
 
@@ -431,18 +478,14 @@ int main()
 	student_list *this_student = main_list.next_student;
 	student_list *next_student;
 
-	while (this_student != NULL && this_student->next_student != NULL) // Отчистка списка студентов
+	while (this_student != NULL) // Отчистка списка студентов
 	{
 		next_student = this_student->next_student;
 			delete this_student;
 		student_count--;
 		this_student = next_student;
-	}								// TODO: проверить на актуальность
-	if (this_student != &main_list)
-	{
-		delete this_student;
-		student_count--;
 	}
+	
 
 	delete[] table;
 		
