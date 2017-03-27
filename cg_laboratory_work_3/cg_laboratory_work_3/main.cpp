@@ -62,6 +62,23 @@ int comp_l(const void* v1, const void* v2)
 	return (p1->a - p2->a);
 }
 
+int draw(int x1, int x2, int y)
+{
+	glColor3f((float)255 / 255, (float)64 / 255, (float)64 / 255);
+	glBegin(GL_POINTS);
+	for (int i = x1 + 1; i < x2; i++)
+	{
+		
+
+		glVertex2f(i, y);
+
+		
+	}
+	glEnd();
+	glFlush();
+	return 0;
+}
+
 int fill()
 {
 	tail->next = &main_list;
@@ -205,10 +222,17 @@ int fill()
 		//if (list_count != 1)
 		qsort(table_l, list_count, sizeof(list*), comp_l);
 		cout << "L_c: " << list_count << endl;
-
+		cout << i << ". ";
 		for (int k = 0; k < list_count; k++)
 		{
-			cout << table_l[k]->a << endl;
+			if ((list_count % 2) &&(k != list_count - 1) && (table_l[k]->a == table_l[k + 1]->a))
+			{
+				for (int j = k + 1; j < list_count - 1; j++)
+				{
+					table_l[j] = table_l[j + 1];
+				}
+			}
+			cout << table_l[k]->a << " ";
 			glColor3f((float)255 / 255, (float)64 / 255, (float)64 / 255);
 			glBegin(GL_POINTS);
 
@@ -216,6 +240,12 @@ int fill()
 
 			glEnd();
 			glFlush();
+		}
+		cout << endl;
+
+		for (int j = 0; j < list_count - 1; j += 2)
+		{
+			draw(table_l[j]->a, table_l[j + 1]->a, i);
 		}
 		
 	}
