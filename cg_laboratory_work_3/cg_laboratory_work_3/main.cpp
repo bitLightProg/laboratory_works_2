@@ -301,7 +301,25 @@ void mouseFunc(int button, int state, int x, int y)
 	{
 		if (state == GLUT_UP)
 		{
-		
+			unsigned char *arr = new unsigned char[width*height*3];
+			glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, arr);
+			for (int i = 0; i < width*height * 3; i += 3)
+			{
+				//if (height != 0 && ((i % height * 3) == 0))
+				//	cout << endl;
+				if (arr[i] != 0)
+				{
+					int h = (int)i / 3 / (width);
+					int w = (i / 3) % (width);
+					cout << h << " " << w << " " << (int) arr[i] << " " << (int) arr[i + 1] << " " << (int) arr[i + 2] << endl;
+					//arr[i] = 0;
+					//arr[i + 1] = 0;
+					//arr[i + 2] = 0;
+				}
+					//cout << (int) arr[i] << " ";
+			}
+			//glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, arr);
+			delete[] arr;
 			
 		}
 	}

@@ -40,6 +40,16 @@ struct student_list
 
 } main_list; // Порядковый список студентов
 
+struct student_pointer_array
+{
+	student_pointer_array* next = NULL;
+	student_list* this_student = NULL;
+	int n;
+	int dd;
+	int mm;
+	int yy;
+};
+
 int student_set(student_list &st, unsigned char* const &s_name, short &d1, short &m1, short &y1, short &d2, short &m2, short &y2) // Установка значений для студентов
 {
 	st.this_student.e_day = d1;
@@ -393,22 +403,35 @@ int find() // Поиск
 	short choose;
 	system("cls");
 	cout << "0. Выход из функции.\n"
-		<< "1. Сортировка по фамилиям студентов.\n"
-		<< "2. Сортировка по дате поступления.\n"
-		<< "3. Сортировка по дате отчисления.\n";
+		<< "1. Поиск по фамилиям студентов.\n"
+		<< "2. Поиск по дате поступления.\n"
+		<< "3. Поиск по дате отчисления.\n";
 	cin >> choose;
 
 	if (!choose)
 		return 0;
 
+
+	student_list *this_student = &main_list;
+	student_pointer_array arr;
+	int count = 0;
+	int d, m, y;
+	int pd, pm, py;
+	int n = 0;
+	int field_length = 0;
+	char ch;
+	student_pointer_array *next_s;
+
 	switch (choose)
 	{
 	case 1:
 		cout << "Введите фамилию студента. Поиск производится по длине с учетом двух опечаток." << endl;
-		char field[128];
+		unsigned char field[128];
 		cin >> field;
-		int field_length = strlen(field);
-		student_list *this_student = &main_list;
+		field_length = strlen((char*)field);
+		this_student = &main_list;
+		
+		
 		while (this_student != NULL)
 		{
 			int n = 0;
@@ -428,15 +451,221 @@ int find() // Поиск
 
 			}
 			if (n > 2)
+			{
+				this_student = this_student->next_student;
 				continue;
-				
+			}
+			
+			if (count == 0)
+			{
+				arr.n = n;
+				arr.this_student = this_student;
+				count++;
+			}
+			else
+			{
+				student_pointer_array *next_s = &arr;
+
+				while (next_s->next != NULL)
+					next_s = next_s->next;
+
+				next_s->next = new student_pointer_array;
+				next_s = next_s->next;
+				next_s->n = n;
+				next_s->this_student = this_student;
+				count++;
+			}
+			this_student = this_student->next_student;
 		}
+
+		if (count == 0)
+		{
+			cout << "Подобные студенты не найдены." << endl;
+			system("pause");
+			return 1;
+		}
+		cout << "Список подобных студентов:" << endl;
+		n = count;
+		
+		while (count > 0)
+		{
+			next_s = &arr;
+			int j = 0;
+			for (int i = 0; i < n; i++)
+			{				
+				if (next_s->n == j)
+				{
+					student_print(cout, next_s->this_student->this_student, n - count-- + 1);
+				}
+				next_s = next_s->next;
+			}
+			j++;
+		}
+		system("pause");
 		break;
 	case 2:
+		cout << "Введите дату поступления студента в формате: ДД.ММ.ГГГГ ПД.ПМ.ПГ" << endl
+			<< "где ПД - погрешность дней, ПМ - погрешность месяцев, ПГ - погрешность лет" << endl;
+		cin >> d >> ch >> m >> ch >> y;
+		
+		cin >> pd >> ch >> pm >> ch >> py;
+		
+		this_student = &main_list;
+		
+		count = 0;
+		while (this_student != NULL)
+		{
+			int dd = 0, mm = 0, yy = 0;
+			if (abs(this_student->this_student.e_year - y) > py)
+				yy = abs(this_student->this_student.e_year - y) - py;
+			if (abs(this_student->this_student.e_month - m) > pm)
+				mm = abs(this_student->this_student.e_month - m) - pm;
+			if (abs(this_student->this_student.e_day - d) > pd)
+				dd = abs(this_student->this_student.e_day - d) - pd;
+
+			if (yy > 0 || (yy == 0 && mm > 0) || (yy == 0 && mm == 0 && dd > 0))
+			{
+				this_student = this_student->next_student;
+				continue;
+			}
+
+				
+			if (count == 0)
+			{
+				arr.dd = dd;
+				arr.mm = mm;
+				arr.yy = yy;
+				arr.this_student = this_student;
+				count++;
+			}
+			else
+			{
+				student_pointer_array *next_s = &arr;
+
+				while (next_s->next != NULL)
+					next_s = next_s->next;
+
+				next_s->next = new student_pointer_array;
+				next_s = next_s->next;
+				next_s->dd = dd;
+				next_s->mm = mm;
+				next_s->yy = yy;
+				next_s->this_student = this_student;
+				count++;
+			}
+			this_student = this_student->next_student;
+		}
+
+		if (count == 0)
+		{
+			cout << "Подобные студенты не найдены." << endl;
+			system("pause");
+			return 1;
+		}
+		cout << "Список подобных студентов:" << endl;
+		n = count;
+		
+		while (count > 0)
+		{
+			next_s = &arr;
+			int j = 0;
+			for (int i = 0; i <= n && count != 0; i++)
+			{				
+				if (next_s->yy == j)
+					student_print(cout, next_s->this_student->this_student, n - count-- + 1);
+				next_s = next_s->next;
+			}
+			j++;
+		}
+		system("pause");
 		break;
 	case 3:
+		cout << "Введите дату отчисления студента в формате: ДД.ММ.ГГГГ ПД.ПМ.ПГ" << endl
+			<< "где ПД - погрешность дней, ПМ - погрешность месяцев, ПГ - погрешность лет" << endl;
+		
+		cin >> d >> m >> y;
+		
+		cin >> pd >> pm >> py;
+
+		this_student = &main_list;
+		
+		count = 0;
+		while (this_student != NULL)
+		{
+			int dd = 0, mm = 0, yy = 0;
+			if (abs(this_student->this_student.l_year - y) > py)
+				yy = abs(this_student->this_student.l_year - y) - py;
+			if (abs(this_student->this_student.l_month - m) > pm)
+				mm = abs(this_student->this_student.l_month - m) - pm;
+			if (abs(this_student->this_student.l_day - d) > pd)
+				dd = abs(this_student->this_student.l_day - d) - pd;
+
+			if (yy > 0 || (yy == 0 && mm > 0) || (yy == 0 && mm == 0 && dd > 0))
+			{
+				this_student = this_student->next_student;
+				continue;
+			}
+
+
+			if (count == 0)
+			{
+				arr.dd = dd;
+				arr.mm = mm;
+				arr.yy = yy;
+				arr.this_student = this_student;
+				count++;
+			}
+			else
+			{
+				student_pointer_array *next_s = &arr;
+
+				while (next_s->next != NULL)
+					next_s = next_s->next;
+
+				next_s->next = new student_pointer_array;
+				next_s = next_s->next;
+				next_s->dd = dd;
+				next_s->mm = mm;
+				next_s->yy = yy;
+				next_s->this_student = this_student;
+				count++;
+			}
+			this_student = this_student->next_student;
+		}
+
+		if (count == 0)
+		{
+			cout << "Подобные студенты не найдены." << endl;
+			system("pause");
+			return 1;
+		}
+		cout << "Список подобных студентов:" << endl;
+		n = count;
+		
+		while (count > 0)
+		{
+			next_s = &arr;
+			int j = 0;
+			for (int i = 0; i <= n && count != 0; i++)
+			{				
+				if (next_s->yy == j)
+					student_print(cout, next_s->this_student->this_student, n - count-- + 1);
+				next_s = next_s->next;
+			}
+			j++;
+		}
 		break;
 	}
+
+	student_pointer_array *an = arr.next;
+	
+	while (an != NULL)
+	{
+		student_pointer_array *ann = an->next;
+		delete an;
+		an = ann;
+	}
+
 	return 0;
 }
 
