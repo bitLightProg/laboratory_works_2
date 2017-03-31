@@ -38,7 +38,7 @@ struct student_list
 	student_list* next_student = NULL;
 	student this_student;
 
-} main_list; // Порядковый список студентов
+} *main_list; // Порядковый список студентов
 
 struct student_pointer_array
 {
@@ -72,7 +72,7 @@ int student_set(student_list &st, unsigned char* const &s_name, short &d1, short
 
 int student_add() // Добавление студента в список с помощью клавиатуры
 {
-	student_list *ins_student = &main_list;
+	student_list *ins_student = main_list;
 	system("cls");
 	cout << "Введите фамилию студента, дату поступления и дату отчисления. Пример: Яковенко 24.9.2016 24.9.2018" << endl;
 	unsigned char s_name[128];
@@ -93,7 +93,7 @@ int student_add() // Добавление студента в список с помощью клавиатуры
 	
 	if (student_count == 0)
 	{
-		student_set(main_list, s_name, d1, m1, y1, d2, m2, y2);
+		student_set(*main_list, s_name, d1, m1, y1, d2, m2, y2);
 
 		student_count++;
 	}
@@ -144,7 +144,7 @@ int print_file() // Вывод студентов в файл
 	ofstream fout("out_table.txt");
 
 	short i = 1;
-	student_list *s_student = &main_list;
+	student_list *s_student = main_list;
 	while (s_student->next_student != NULL)
 	{
 		student_print(fout, s_student->this_student, i++);
@@ -169,7 +169,7 @@ int read_file() // Считывание студентов из файла
 	system("cls");
 	ifstream fin("in_table.txt");
 
-	student_list *ins_student = &main_list;
+	student_list *ins_student = main_list;
 
 	unsigned char s_name[128];
 	short y1, m1, d1, m2, d2, y2, i = 0;
@@ -185,7 +185,7 @@ int read_file() // Считывание студентов из файла
 
 		if (student_count == 0)
 		{
-			student_set(main_list, s_name, d1, m1, y1, d2, m2, y2);
+			student_set(*main_list, s_name, d1, m1, y1, d2, m2, y2);
 
 			student_count++;
 		}
@@ -228,7 +228,7 @@ int print() // Вывод на экран
 	case 1:
 	{
 		
-		student_list *s_student = &main_list;
+		student_list *s_student = main_list;
 		while (s_student->next_student != NULL)
 		{
 			student_print(cout, s_student->this_student, i++);
@@ -371,7 +371,7 @@ int sort() // Функция сортировки
 
 	short i = 0;
 
-	student_list *this_student = &main_list;
+	student_list *this_student = main_list;
 	while (this_student->next_student != NULL)
 	{
 		table[i++] = &this_student->this_student;
@@ -412,7 +412,7 @@ int find() // Поиск
 		return 0;
 
 
-	student_list *this_student = &main_list;
+	student_list *this_student = main_list;
 	student_pointer_array arr;
 	int count = 0;
 	int d, m, y;
@@ -429,7 +429,7 @@ int find() // Поиск
 		unsigned char field[128];
 		cin >> field;
 		field_length = strlen((char*)field);
-		this_student = &main_list;
+		this_student = main_list;
 		
 		
 		while (this_student != NULL)
@@ -510,7 +510,7 @@ int find() // Поиск
 		
 		cin >> pd >> ch >> pm >> ch >> py;
 		
-		this_student = &main_list;
+		this_student = main_list;
 		
 		count = 0;
 		while (this_student != NULL)
@@ -587,7 +587,7 @@ int find() // Поиск
 		
 		cin >> pd >> pm >> py;
 
-		this_student = &main_list;
+		this_student = main_list;
 		
 		count = 0;
 		while (this_student != NULL)
@@ -669,12 +669,114 @@ int find() // Поиск
 	return 0;
 }
 
+int student_delete()
+{
+	int choose;
+	system("cls");
+	if (student_count == 0)
+	{
+		cout << "Некого удалять." << endl;
+		system("pause");
+		return 1;
+	}
+	cout << "0. Выход из функции.\n"
+		<< "Всего " << student_count << " студентов.\n"
+		<< "Введите порядковый номер студента, которого нужно удалить.\n";
+	cin >> choose;
+
+	if (!choose)
+		return 0;
+
+	if (choose > student_count)
+	{
+		cout << "Неверный ввод. Выход из функции." << endl;
+		system("pause");
+		return 1;
+	}
+
+	int i = 1;
+	student_list *this_student = main_list;
+	student_list *prev_student = main_list;
+	if (choose == 1)
+	{
+		main_list = main_list->next_student;
+		delete this_student;
+		student_count--;
+		cout << "Студент под номером " << choose << " успешно удален." << endl;
+		system("pause");
+		return 0;
+	}
+	while (i < choose)
+	{
+		prev_student = this_student;
+		this_student = this_student->next_student;
+		i++;
+	}
+	prev_student->next_student = this_student->next_student;
+	delete this_student;
+	student_count--;
+
+	cout << "Студент под номером " << choose << " успешно удален." << endl;
+	system("pause");
+	return 0;
+}
+
+int student_rewrite()
+{
+	int choose;
+	system("cls");
+	if (student_count == 0)
+	{
+		cout << "Некого редактировать." << endl;
+		system("pause");
+		return 1;
+	}
+	cout << "0. Выход из функции.\n"
+		<< "Всего " << student_count << " студентов.\n"
+		<< "Введите порядковый номер студента, которого нужно изменить.\n";
+	cin >> choose;
+
+	if (!choose)
+		return 0;
+
+	if (choose > student_count)
+	{
+		cout << "Неверный ввод. Выход из функции." << endl;
+		system("pause");
+		return 1;
+	}
+
+	int i = 1;
+	student_list *this_student = main_list;
+
+	while (i < choose)
+	{
+		this_student = this_student->next_student;
+		i++;
+	}
+
+	cout << "Студент под номером " << i << ":" << endl;
+	student_print(cout, this_student->this_student, i);
+	cout << "Введите новые данные студента в том же формате." << endl;
+	
+	unsigned char s_name[128];
+	short y1, m1, d1, m2, d2, y2;
+	unsigned char ch;
+	cin >> s_name;
+	cin >> d1 >> ch >> m1 >> ch >> y1;
+	cin >> d2 >> ch >> m2 >> ch >> y2;
+	student_set(*this_student, s_name, d1, m1, y1, d2, m2, y2);
+
+	
+	return 0;
+}
+
 int main()
 {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
-	student_list first_student;
+	main_list = new student_list;
 	short choose;
 	int(*arr[10])();
 	arr[0] = student_add;
@@ -683,6 +785,8 @@ int main()
 	arr[3] = print;
 	arr[4] = sort;
 	arr[5] = find;
+	arr[6] = student_delete;
+	arr[7] = student_rewrite;
 
 	do
 	{
@@ -704,7 +808,7 @@ int main()
 			arr[choose - 1]();
 	} while (choose != 0);
 
-	student_list *this_student = main_list.next_student;
+	student_list *this_student = main_list;
 	student_list *next_student;
 
 	while (this_student != NULL) // Отчистка списка студентов
