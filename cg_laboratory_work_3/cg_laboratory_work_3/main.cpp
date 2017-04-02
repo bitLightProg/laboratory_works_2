@@ -68,14 +68,16 @@ int draw(int x1, int x2, int y)
 	glBegin(GL_POINTS);
 	for (int i = x1 + 1; i < x2; i++)
 	{
-		
-
 		glVertex2f(i, y);
-
-		
+		if (i % 6 == 0)
+			Sleep(1);
+			glEnd();
+			glFlush();
+			glBegin(GL_POINTS);
 	}
 	glEnd();
 	glFlush();
+	
 	return 0;
 }
 
@@ -253,6 +255,144 @@ int fill()
 	return 0;
 }
 
+int fill_better()
+{
+	glColor3f((float)255 / 255, (float)64 / 255, (float)64 / 255);
+	glBegin(GL_LINE_LOOP);
+	points_list *this_p = &main_list;
+	do
+	{
+		glVertex2f(this_p->x, this_p->y); 
+		this_p = this_p->next;
+	} while (this_p != NULL);
+	glEnd();
+	glColor3f((float)254 / 255, (float)64 / 255, (float)64 / 255);
+	glBegin(GL_POINTS);
+	this_p = &main_list;
+	do
+	{
+		glVertex2f(this_p->x, this_p->y);
+		this_p = this_p->next;
+	} while (this_p != NULL);
+	glEnd();
+	glColor3f((float)255 / 255, (float)64 / 255, (float)64 / 255);
+	glFlush();
+
+	unsigned char *arr = new unsigned char[width*height * 3];
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, arr);
+	list *points = NULL;
+	int he = -1;
+	int p_count = 0;
+	for (int i = width*height * 3 + 3*width; i > 0; i += 3)
+	{
+		if (i / 3 % width == 0)
+		{
+			i -= 6 * width;
+			if (he == -1)
+			{
+				he = (int)i / 3 / (width);
+				he = 400 - he;
+			}
+			else
+			{
+				if (points != NULL && p_count % 2 != 1)
+				{
+					list *this_p = points;
+					list *next_p = this_p->next;
+					while (this_p != NULL)
+					{
+						draw(this_p->a, next_p->a, he);
+						if (next_p->next == NULL)
+							break;
+
+						this_p = next_p->next;
+						next_p = this_p->next;
+					}
+				}
+				he = 400 - (int)i / 3 / (width);
+				if (points != NULL)
+				{
+					list *this_p = points;
+					list *next_p = points;
+					while (this_p != NULL)
+					{
+						next_p = this_p->next;
+						delete this_p;
+						this_p = next_p;
+						p_count--;
+					}
+					points = NULL;
+				}
+			}
+		}
+		if (i < 0)
+			break;
+		if (arr[i] == 255)
+		{
+			//int h = (int)i / 3 / (width);
+			//h = 400 - h;
+			int w = (i / 3) % (width);
+			if (p_count == 0)
+			{
+				points = new list;
+				points->a = w;
+				p_count++;
+				do
+				{
+					i += 3;
+				} while (arr[i] == 255);
+			}
+			else if (p_count % 2 == 1)
+			{
+				if ((i+3)/3 % width != 0 && arr[i + 3] == 255)
+				{
+					continue;
+				}
+				else
+				{
+					list *next_p = points;
+					while (next_p->next != NULL)
+					{
+						next_p = next_p->next;
+					}
+					next_p->next = new list;
+					next_p->next->a = w;
+					p_count++;
+				}
+			}
+			else
+			{
+				list *next_p = points;
+				while (next_p->next != NULL)
+				{
+					next_p = next_p->next;
+				}
+				next_p->next = new list;
+				next_p->next->a = w;
+				p_count++;
+				do
+				{
+					i += 3;
+				} while (arr[i] == 255);
+			}
+			//cout << h << " " << w << " " << (int)arr[i] << " " << (int)arr[i + 1] << " " << (int)arr[i + 2] << endl;
+		}
+	}
+	/*for (int i = 0; i < width*height * 3; i += 3)
+	{
+		if (arr[i] != 0)
+		{
+			int h = (int)i / 3 / (width);
+			int w = (i / 3) % (width);
+			cout << h << " " << w << " " << (int)arr[i] << " " << (int)arr[i + 1] << " " << (int)arr[i + 2] << endl;
+		}
+	}*/
+	delete[] arr;
+
+
+	return 0;
+}
+
 void mouseFunc(int button, int state, int x, int y)
 {
 	if (button == GLUT_LEFT_BUTTON)
@@ -331,7 +471,10 @@ void processNormalKeys(unsigned char key, int x, int y)
 	if (key == 27)
 		exit(0);
 	if (key == ' ')
+	{
 		fill();
+		//fill_better();
+	}
 }
 
 int main(int argc, char ** argv)

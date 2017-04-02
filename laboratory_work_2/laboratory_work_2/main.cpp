@@ -425,13 +425,14 @@ int find() // Поиск
 	switch (choose)
 	{
 	case 1:
+	{
 		cout << "Введите фамилию студента. Поиск производится по длине с учетом двух опечаток." << endl;
 		unsigned char field[128];
 		cin >> field;
 		field_length = strlen((char*)field);
 		this_student = main_list;
-		
-		
+
+
 		while (this_student != NULL)
 		{
 			int n = 0;
@@ -445,7 +446,7 @@ int find() // Поиск
 
 			for (int i = 0; i < field_length; i++)
 			{
-				
+
 				if (field[i] != this_student->this_student.second_name[i])
 					n++;
 
@@ -455,7 +456,7 @@ int find() // Поиск
 				this_student = this_student->next_student;
 				continue;
 			}
-			
+
 			if (count == 0)
 			{
 				arr.n = n;
@@ -486,13 +487,13 @@ int find() // Поиск
 		}
 		cout << "Список подобных студентов:" << endl;
 		n = count;
-		
+		int j = 0;
 		while (count > 0)
 		{
 			next_s = &arr;
-			int j = 0;
+			//j = 0;
 			for (int i = 0; i < n; i++)
-			{				
+			{
 				if (next_s->n == j)
 				{
 					student_print(cout, next_s->this_student->this_student, n - count-- + 1);
@@ -503,15 +504,17 @@ int find() // Поиск
 		}
 		system("pause");
 		break;
+	}
 	case 2:
+	{
 		cout << "Введите дату поступления студента в формате: ДД.ММ.ГГГГ ПД.ПМ.ПГ" << endl
 			<< "где ПД - погрешность дней, ПМ - погрешность месяцев, ПГ - погрешность лет" << endl;
 		cin >> d >> ch >> m >> ch >> y;
-		
+
 		cin >> pd >> ch >> pm >> ch >> py;
-		
+
 		this_student = main_list;
-		
+
 		count = 0;
 		while (this_student != NULL)
 		{
@@ -529,7 +532,7 @@ int find() // Поиск
 				continue;
 			}
 
-				
+
 			if (count == 0)
 			{
 				arr.dd = dd;
@@ -564,13 +567,13 @@ int find() // Поиск
 		}
 		cout << "Список подобных студентов:" << endl;
 		n = count;
-		
+		int j = 0;
 		while (count > 0)
 		{
 			next_s = &arr;
-			int j = 0;
+
 			for (int i = 0; i <= n && count != 0; i++)
-			{				
+			{
 				if (next_s->yy == j)
 					student_print(cout, next_s->this_student->this_student, n - count-- + 1);
 				next_s = next_s->next;
@@ -579,16 +582,18 @@ int find() // Поиск
 		}
 		system("pause");
 		break;
+	}
 	case 3:
+	{
 		cout << "Введите дату отчисления студента в формате: ДД.ММ.ГГГГ ПД.ПМ.ПГ" << endl
 			<< "где ПД - погрешность дней, ПМ - погрешность месяцев, ПГ - погрешность лет" << endl;
-		
+
 		cin >> d >> m >> y;
-		
+
 		cin >> pd >> pm >> py;
 
 		this_student = main_list;
-		
+
 		count = 0;
 		while (this_student != NULL)
 		{
@@ -641,13 +646,13 @@ int find() // Поиск
 		}
 		cout << "Список подобных студентов:" << endl;
 		n = count;
-		
+		int j = 0;
 		while (count > 0)
 		{
 			next_s = &arr;
-			int j = 0;
+
 			for (int i = 0; i <= n && count != 0; i++)
-			{				
+			{
 				if (next_s->yy == j)
 					student_print(cout, next_s->this_student->this_student, n - count-- + 1);
 				next_s = next_s->next;
@@ -655,6 +660,7 @@ int find() // Поиск
 			j++;
 		}
 		break;
+	}
 	}
 
 	student_pointer_array *an = arr.next;
