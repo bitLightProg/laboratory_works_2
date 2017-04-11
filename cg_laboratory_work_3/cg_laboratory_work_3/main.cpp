@@ -69,10 +69,10 @@ int draw(int x1, int x2, int y)
 	for (int i = x1 + 1; i < x2; i++)
 	{
 		glVertex2f(i, y);
-		if (i % 6 == 0)
-			Sleep(1);
+		//if (i % 200 == 0)
+		//	Sleep(1);
 			glEnd();
-			glFlush();
+			//glFlush();
 			glBegin(GL_POINTS);
 	}
 	glEnd();
@@ -375,18 +375,10 @@ int fill_better()
 					i += 3;
 				} while (arr[i] == 255);
 			}
-			//cout << h << " " << w << " " << (int)arr[i] << " " << (int)arr[i + 1] << " " << (int)arr[i + 2] << endl;
+			
 		}
 	}
-	/*for (int i = 0; i < width*height * 3; i += 3)
-	{
-		if (arr[i] != 0)
-		{
-			int h = (int)i / 3 / (width);
-			int w = (i / 3) % (width);
-			cout << h << " " << w << " " << (int)arr[i] << " " << (int)arr[i + 1] << " " << (int)arr[i + 2] << endl;
-		}
-	}*/
+	
 	delete[] arr;
 
 
@@ -399,7 +391,7 @@ void mouseFunc(int button, int state, int x, int y)
 	{
 		if (state == GLUT_UP)
 		{
-			//cout << y << endl;
+			
 			glColor3f((float)255 / 255, (float)64 / 255, (float)64 / 255);
 			glBegin(GL_POINTS);
 			
@@ -412,16 +404,12 @@ void mouseFunc(int button, int state, int x, int y)
 			{
 				main_list.x = x;
 				main_list.y = y;
-				//main_list.next = new points_list;
-				//main_list.next->prev = &main_list;
-				//tail = main_list.next;
+				
 				points_count++;
 			}
 			else
 			{
-				//points_list *ins_point = &main_list;
-				//while (ins_point->next != NULL)
-				//	ins_point = ins_point->next;
+				
 				tail->next = new points_list;
 				tail->next->prev = tail;
 				tail = tail->next;

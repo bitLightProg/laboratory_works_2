@@ -227,7 +227,12 @@ int print() // Вывод на экран
 	{
 	case 1:
 	{
-		
+		if (student_count == 0)
+		{
+			cout << "Записи отсутствуют." << endl;
+			system("pause");
+			return 1;
+		}
 		student_list *s_student = main_list;
 		while (s_student->next_student != NULL)
 		{
