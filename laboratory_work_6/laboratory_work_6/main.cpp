@@ -174,13 +174,14 @@ int main()
 			break;
 		if (a == 1)
 		{
-			cout << "Введите строку: ";
+			cout << "Введите строку, не содержащую пробелов: ";
 			char* str = new char[256];
 			cin >> str;
 			add_member(str);
 		}
 		else if (a == 2)
 		{
+			cout << "Формат: *строка* *количество детей*" << endl;
 			if (print_tree() == 1)
 				cout << "Дерево пусто." << endl;
 			system("pause");
