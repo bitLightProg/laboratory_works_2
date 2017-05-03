@@ -154,20 +154,24 @@ char*** read_file(istream& fin)
 
 int main()
 {
+	setlocale(LC_ALL,"");
 	//ifstream fin("1.txt");
 	//ifstream fin("in_table.txt");
 	ifstream fin("1.txt");
 	char*** out;
-	//read_file(fin);
-	out = read_file(cin);
+	out = read_file(fin);
+	//out = read_file(cin);
 	show(out);
 	for (int i = 0; i < p_count; i++)
 	{
-		for (int j = 0; j < l_size; j++)
-			if (out[i][j] != NULL)
-				delete[] out[i][j];
-			else break;
-		free(out[i]);
+		if (out[i] != NULL)
+		{
+			for (int j = 0; j < l_size; j++)
+				if (out[i][j] != NULL)
+					delete[] out[i][j];
+				else break;
+				free(out[i]);
+		}
 	}
 	free(out);
 	system("pause");
