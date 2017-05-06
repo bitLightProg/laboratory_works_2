@@ -1,6 +1,6 @@
 /*9. Задан словарь из слов одинаковой длины, например «барак, баран, банан, дурак, бутон, бутан, питон, барин».
 Для заданной пары слов определить цепочку так, чтобы каждое следующее слово отличалось не более чем на 2 буквы.*/
-
+// барак баран банан дурак бутон бутан питон барин
 #include <iostream>
 #include <Windows.h>
 #include <stack>
@@ -18,7 +18,7 @@ word_list* tail = NULL;
 word_list* beg = NULL;
 int l_count = 0;
 int lenght = 0;
-
+/*Функция вывода слова по номеру*/
 int print_word(short n)
 {
 	if (l_count <= n)
@@ -29,11 +29,11 @@ int print_word(short n)
 	{
 		word_list* it = beg;
 		for (int i = 0; i < n; i++) it = it->next;
-		cout << it->word << endl;
+		cout << it->word << " ";
 	}
 	return 0;
 }
-
+/*Функция добавления слова в список*/
 int add_word(char* str)
 {
 	if (beg == NULL)
@@ -53,11 +53,12 @@ int add_word(char* str)
 	}
 	return 0;
 }
-
+/*Считывание потока*/
+int c = 0;
 int read_file(istream& fin)
 {
 
-	while (!fin.eof())
+	while (/*!fin.eof()*/ c > 0)
 	{
 		char *str = new char[256];
 		str[255] = 0;
@@ -71,6 +72,7 @@ int read_file(istream& fin)
 		}
 		if (str[0] != 0)
 			add_word(str);
+		c--;
 	}
 	
 	return 0;
@@ -92,12 +94,12 @@ int list_copy(list<short> &from, list<short> &to)
 	}	
 	return 0;
 }
-
-int recurs(int i, int n)
+/*Рекурсия-поиск пути наибольшего пути до ind2*/
+int recurs(int i, int n, int ind2)
 {
 	th.push_back(i);
 	was[i] = true;
-	if (n > n_max)
+	if (n > n_max && i == ind2)
 	{
 		list_copy(th, max);
 		n_max = n;
@@ -106,7 +108,7 @@ int recurs(int i, int n)
 	{
 		if (arr[i][j] == 1 && was[j] == false)
 		{
-			recurs(j, n + 1);
+			recurs(j, n + 1, ind2);
 		}
 	}
 	was[i] = false;
@@ -114,7 +116,7 @@ int recurs(int i, int n)
 	return 0;
 }
 
-int find_solution()
+int find_solution(int ind1, int ind2)
 {
 	arr = new int*[l_count];
 	was = new bool[l_count];
@@ -168,20 +170,16 @@ int find_solution()
 		i++;
 	}
 
-	for (int i = 0; i < l_count; i++)
+	for (int i = ind1; i < ind1+1; i++)
 	{
-		recurs(i, 1);
-		for (int j = 0; j < l_count; j++)
-		{
-			cout << arr[i][j] << " ";
-		}
-		cout << endl;
+		recurs(i, 1, ind2);
 	}
-
+	cout << "Цепочка слов: ";
 	for (list<short>::iterator i = max.begin(); i != max.end(); i++)
 	{
 		print_word(*i);
 	}
+	cout << endl;
 
 	delete[] arr;
 	delete[] was;
@@ -193,10 +191,28 @@ int main()
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
-	
+	cout << "Введите количество слов в словаре: ";
 
+	cin >> c;
+	cout << "Введите словарь(слова разделены пробелом): ";
 	read_file(cin);
-	find_solution();
+	cout << "Введите пару слов(слова разделены пробелом): ";
+	char* ch1 = new char[lenght + 1];
+	char* ch2 = new char[lenght + 1];
+	cin >> ch1 >> ch2;
+	int ind1 = -1, ind2 = -1;
+	int n = 0;
+	word_list *l = beg;
+	while (l != NULL)
+	{
+		if (!strcmp(ch1, l->word))
+				ind1 = n;
+		if (!strcmp(ch2, l->word))
+			ind2 = n;
+		n++;
+		l = l->next;
+	}
+	find_solution(ind1, ind2);
 
 	word_list* el = beg;
 	word_list* el_n;
