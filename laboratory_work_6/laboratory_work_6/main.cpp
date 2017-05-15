@@ -3,6 +3,7 @@
 Функция при включении строки создает  вершину, наиболее близкую к корню.*/
 // 26 5
 #include <iostream>
+#include <ctime>
 #include <Windows.h>
 
 using namespace std;
@@ -185,6 +186,19 @@ int main()
 			if (print_tree() == 1)
 				cout << "Дерево пусто." << endl;
 			system("pause");
+		}
+		else if (a == 3)
+		{
+			int n;
+			cin >> n;
+			srand(time(NULL));
+			for (int i = 0; i < n; i++)
+			{
+				char* str = new char[256];
+				str[0] = rand() % 26 + 'a';
+				str[1] = 0;
+				add_member(str);
+			}
 		}
 
 	}
