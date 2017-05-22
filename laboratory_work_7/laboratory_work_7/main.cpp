@@ -21,8 +21,8 @@ struct some_list_str
 
 struct some_tree
 {
-	some_tree* left;
-	some_tree* right;
+	some_tree* left = NULL;
+	some_tree* right = NULL;
 	int val;
 };
 
@@ -64,6 +64,111 @@ void* get_next_l(void* p...)
 {
 	p = *(void**)p;	
 	return p;
+}
+
+int n = -1;
+int k = 0;
+bool f = false;
+
+void* get_next_tree(void* p...)
+{
+	if (n == -1)
+	{
+		n = 0;
+		return NULL;
+	}
+	if (n == 0)
+	{
+		while (((some_tree*)p)->left != NULL)
+			p = ((some_tree*)p)->left;
+		n = 1;
+		return p;
+	}
+	if (n == 1)
+	{
+		bool l = false;
+		void* p1 = *(void**)((int*)&p + 1);
+		void* p2 = NULL;
+		if (p1 == p)
+		{
+			if (k != 0) f = true;
+			if (((some_tree*)p1)->right != NULL)
+			{
+				p1 = ((some_tree*)p1)->right;
+				while (((some_tree*)p1)->left != NULL)
+				{
+					p1 = ((some_tree*)p1)->left;
+				}
+				if (k != 0) k--;
+				return p1;
+			}
+			else
+			{
+				if (k != 0) k--;
+				return NULL;
+			}
+		}
+		else
+		{
+			if (!f)
+			{
+				while (((some_tree*)p1)->left != NULL)
+				{
+					
+					k++;
+					p2 = get_next_tree(p, ((some_tree*)p1)->left/*, &p1*/);
+					if (f)
+					{
+						l = true;
+						break;
+					}
+					break;
+				}
+			}
+			if (!f)
+			{
+				while (((some_tree*)p1)->right != NULL)
+				{
+					if (f)
+					{
+						break;
+					}
+					k++;
+					p2 = get_next_tree(p, ((some_tree*)p1)->right/*, &p1*/);
+					break;
+				}
+				
+			}
+
+			if (f)
+			{
+				if (k == 0)
+				{
+					k++;
+					f = false;
+				}
+
+				if (p2 != NULL)
+				{
+					k--;
+					return p2;
+				}
+
+				if (l)
+				{
+					k--;
+					return p1;
+				}
+				else
+				{
+					k--;
+					return NULL;
+				}
+			}
+		}
+		k--;
+		return NULL;
+	}
 }
 
 int cmp_i(void* p1, void* p2)
@@ -168,6 +273,31 @@ int sort(void* begin,
 	return 0;
 }
 
+int print_tree(some_tree *current, int t)
+{
+	/*if (current == NULL)
+		return 1;*/
+	
+	for (int i = 0; i < t; i++)
+		cout << "   ";
+	if (current == NULL)
+	{
+		cout << "NULL" << endl;
+		return 0;
+	}
+	cout << current->val << endl;
+	//if (current->left != NULL)
+		print_tree(current->left, t + 1);
+		
+	//if (current->right != NULL)
+		print_tree(current->right, t + 1);
+	
+
+	return 0;
+}
+
+
+
 int main()
 {
 	SetConsoleCP(1251);
@@ -176,20 +306,28 @@ int main()
 	double arr_d[] = { 1.0,2.1,2.2,2.3,2.22,2.21 };
 	size_of_arr = 6;
 	void* p = 0;
-	//sort(arr, get_next_arr_i, cmp_i, swap_i);
-	//sort(arr_d, get_next_arr_d, cmp_d, swap_d);
-	/*for (int i = 0; i < size_of_arr; i++)
-		cout << arr[i] << endl;*/
-	/*for (int i = 0; i < size_of_arr; i++)
-		cout << arr_d[i] << endl;*/
+	for (int i = 0; i < size_of_arr; i++)
+		cout << arr[i] << " ";
+	cout << endl;
+	for (int i = 0; i < size_of_arr; i++)
+		cout << arr_d[i] << " ";
+	cout << endl;
+	sort(arr, get_next_arr_i, cmp_i, swap_i);
+	sort(arr_d, get_next_arr_d, cmp_d, swap_d);
+	for (int i = 0; i < size_of_arr; i++)
+		cout << arr[i] << " ";
+	cout << endl;
+	for (int i = 0; i < size_of_arr; i++)
+		cout << arr_d[i] << " ";
+	cout << endl;
 	//cout << get_next_arr_i((int*)p + 2, p) << endl;
 	//cout << get_next_arr_d((double*)p + 1, p) << endl;
 	
-	/*char str[] = "12345678Виктория1234567890\0";
+	char str[] = "12345678Виктория1234567890\0";
 	size_of_arr = strlen(str);
 	cout << str << endl;
 	sort(str, get_next_arr_ch, cmp_ch, swap_ch);
-	cout << str << endl;*/
+	cout << str << endl;
 	some_list_i* end = new some_list_i;
 	some_list_i* some1 = new some_list_i;
 	some_list_i* some2 = new some_list_i;
@@ -201,12 +339,31 @@ int main()
 	some2->val = 10;
 	beg->next = some2;
 	beg->val = 2;
+	cout << beg->val << " " << beg->next->val << " " << beg->next->next->val << " " << beg->next->next->next->val << endl;
 	sort(beg, get_next_l, cmp_l_i, swap_l_i);
+	cout << beg->val << " " << beg->next->val << " " << beg->next->next->val << " " << beg->next->next->next->val << endl;
 	//cout << get_next_l(end) << endl;
 	delete end;
 	delete some2;
 	delete some1;
 	delete beg;
+
+
+	some_tree* tree = new some_tree;
+	tree->left = new some_tree;
+	tree->right = new some_tree;
+	tree->val = 4;
+	tree->left->val = 3;
+	tree->right->val = 1;
+	tree->left->right = new some_tree;
+	tree->left->right->val = 10;
+	print_tree(tree, 0);
+	sort(tree, get_next_tree, cmp_tree, swap_tree);
+	print_tree(tree, 0);
+
+	delete tree->left;
+	delete tree->right;
+	delete tree;
 	system("pause");
 	return 0;
 }

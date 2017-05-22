@@ -121,9 +121,6 @@ int main()
 	free(string);
 	free(outstring);
 
-	
-
-
 	system("pause");
 	return 0;
 }
