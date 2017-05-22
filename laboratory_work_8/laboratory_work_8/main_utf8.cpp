@@ -1,14 +1,14 @@
-/*9. Кодирование и декодирование строки символов, содержащих цифры, в последовательность битов.
-Десятичная цифра кодируется 4 битами - одной шестнадцатеричной цифрой.
-Цифра F обозначает, что за ней следует байт (2 цифры) с кодом символа, отличного от цифры.
-Разработать функции кодирования и декодирования с определением процента уплотнения.*/
+п»ї/*9. РљРѕРґРёСЂРѕРІР°РЅРёРµ Рё РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕРєРё СЃРёРјРІРѕР»РѕРІ, СЃРѕРґРµСЂР¶Р°С‰РёС… С†РёС„СЂС‹, РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ Р±РёС‚РѕРІ.
+Р”РµСЃСЏС‚РёС‡РЅР°СЏ С†РёС„СЂР° РєРѕРґРёСЂСѓРµС‚СЃСЏ 4 Р±РёС‚Р°РјРё - РѕРґРЅРѕР№ С€РµСЃС‚РЅР°РґС†Р°С‚РµСЂРёС‡РЅРѕР№ С†РёС„СЂРѕР№.
+Р¦РёС„СЂР° F РѕР±РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ Р·Р° РЅРµР№ СЃР»РµРґСѓРµС‚ Р±Р°Р№С‚ (2 С†РёС„СЂС‹) СЃ РєРѕРґРѕРј СЃРёРјРІРѕР»Р°, РѕС‚Р»РёС‡РЅРѕРіРѕ РѕС‚ С†РёС„СЂС‹.
+Р Р°Р·СЂР°Р±РѕС‚Р°С‚СЊ С„СѓРЅРєС†РёРё РєРѕРґРёСЂРѕРІР°РЅРёСЏ Рё РґРµРєРѕРґРёСЂРѕРІР°РЅРёСЏ СЃ РѕРїСЂРµРґРµР»РµРЅРёРµРј РїСЂРѕС†РµРЅС‚Р° СѓРїР»РѕС‚РЅРµРЅРёСЏ.*/
 #include <iostream>
 #include <ctime>
 #include <Windows.h>
 
 using namespace std;
 
-int r_alloc(unsigned char* &in, int &size) // Выделение дополнительной памяти под массив
+int r_alloc(unsigned char* &in, int &size) // Р’С‹РґРµР»РµРЅРёРµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕР№ РїР°РјСЏС‚Рё РїРѕРґ РјР°СЃСЃРёРІ
 {
 	int new_count = size * 2;
 	unsigned char* temp = (unsigned char*)realloc(in, new_count * sizeof(unsigned char) + 1);
@@ -18,7 +18,7 @@ int r_alloc(unsigned char* &in, int &size) // Выделение дополнительной памяти по
 	if (temp != in)
 		in = temp;
 
-	for (int i = size; i < new_count; in[i++] = NULL); // Обнуление новой памяти на всякий случай
+	for (int i = size; i < new_count; in[i++] = NULL); // РћР±РЅСѓР»РµРЅРёРµ РЅРѕРІРѕР№ РїР°РјСЏС‚Рё РЅР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№
 	size = new_count;
 	
 	return 0;
@@ -28,7 +28,7 @@ unsigned char* coding(unsigned char* &input, int &size)
 {
 	unsigned char* output = (unsigned char*)calloc(size + 1, size + 1);
 	int o_index = 0;
-	int flag = 0; // какая половина байта сейчас записывается
+	int flag = 0; // РєР°РєР°СЏ РїРѕР»РѕРІРёРЅР° Р±Р°Р№С‚Р° СЃРµР№С‡Р°СЃ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ
 
 	for (int i = 0; input[i] != 0; i++)
 	{
@@ -51,7 +51,7 @@ unsigned char* coding(unsigned char* &input, int &size)
 			else
 			{
 				//byte <<= 4;
-				output[o_index] |= (byte << 4); // в конец
+				output[o_index] |= (byte << 4); // РІ РєРѕРЅРµС†
 				flag = 0;
 				o_index++;
 			}
@@ -62,8 +62,8 @@ unsigned char* coding(unsigned char* &input, int &size)
 			if (!flag)
 			{
 				output[o_index] |= 0xF;
-				output[o_index] |= (byte << 4); // первая половина в конец
-				output[++o_index] |= ((byte & 0xF0) >> 4); // вторая половина в начало
+				output[o_index] |= (byte << 4); // РїРµСЂРІР°СЏ РїРѕР»РѕРІРёРЅР° РІ РєРѕРЅРµС†
+				output[++o_index] |= ((byte & 0xF0) >> 4); // РІС‚РѕСЂР°СЏ РїРѕР»РѕРІРёРЅР° РІ РЅР°С‡Р°Р»Рѕ
 				flag = 1;
 			}
 			else
@@ -92,7 +92,7 @@ unsigned char* decoding(unsigned char* &input, int &size)
 	int out_size = size;
 	unsigned char* output = (unsigned char*)calloc(size + 1, size + 1);
 	int o_index = 0;
-	int flag = 0; // какая половина байта сейчас декодируется
+	int flag = 0; // РєР°РєР°СЏ РїРѕР»РѕРІРёРЅР° Р±Р°Р№С‚Р° СЃРµР№С‡Р°СЃ РґРµРєРѕРґРёСЂСѓРµС‚СЃСЏ
 
 	for (int i = 0; i < size; i++)
 	{
@@ -103,7 +103,7 @@ unsigned char* decoding(unsigned char* &input, int &size)
 		char byte = input[i];
 		if (!flag)
 		{
-			if ((byte & 0xF) == 0xF) // если дальше символ
+			if ((byte & 0xF) == 0xF) // РµСЃР»Рё РґР°Р»СЊС€Рµ СЃРёРјРІРѕР»
 			{
 				//cout << " ";
 				output[o_index] = (byte & 0xF0) >> 4;
@@ -122,14 +122,14 @@ unsigned char* decoding(unsigned char* &input, int &size)
 			}
 		}
 		else
-		if (flag) // вторая половина
+		if (flag) // РІС‚РѕСЂР°СЏ РїРѕР»РѕРІРёРЅР°
 		{
 			if (i == size - 1)
 			{
 				if ((byte & 0xF0) == 0xE0)
 					break;
 			}
-			if ((byte & 0xF0) == 0xF0) // если дальше символ
+			if ((byte & 0xF0) == 0xF0) // РµСЃР»Рё РґР°Р»СЊС€Рµ СЃРёРјРІРѕР»
 			{
 				//output[o_index] = (byte >> 4);
 				output[o_index++] |= (input[++i]);
@@ -168,7 +168,7 @@ int main()
 	char ch;
 	unsigned index = 0;
 
-	cout << "Введите исходную строку:" << endl;
+	cout << "Р’РІРµРґРёС‚Рµ РёСЃС…РѕРґРЅСѓСЋ СЃС‚СЂРѕРєСѓ:" << endl;
 	while (ch = getchar())
 	{
 		if (ch == '\n')
@@ -185,7 +185,7 @@ int main()
 			}
 			else
 			{
-				cout << "Невозможно выделить память. Завершение работы программы.";
+				cout << "РќРµРІРѕР·РјРѕР¶РЅРѕ РІС‹РґРµР»РёС‚СЊ РїР°РјСЏС‚СЊ. Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ РїСЂРѕРіСЂР°РјРјС‹.";
 				system("pause");
 				return 1;
 			}
