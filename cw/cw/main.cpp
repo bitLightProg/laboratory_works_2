@@ -40,8 +40,9 @@ struct block_list
 };
 
 
-void* heap = NULL;
-int heap_size = 256;
+//void* heap = NULL;
+char heap[2560];
+int heap_size = 2560;
 int size_of_system_data = sizeof(block_list);
 
 /*Выделяет нужным образом место размера size_of_insert_block в блоке current_free_block.
@@ -96,6 +97,8 @@ block_list* find_place(block_list* first_free_block, int size_of_inset_block)
 block_list* add_system_block(block_list* &first_free_block, block_list* &first_occupied_block)
 {
 	block_list* place_to_insert = find_place(first_free_block, size_of_system_data);
+	if (place_to_insert == NULL)
+		return NULL;
 	block_list* new_system_block = (block_list*)insert_block(place_to_insert, size_of_system_data);
 	new_system_block->block = NULL;
 	new_system_block->next_element = NULL;
@@ -149,6 +152,8 @@ int print_memory(block_list* first_free_block, block_list* first_occupied_block)
 	return 0;
 }
 
+void press_system_blocks();
+
 /*Выделяет память под блок размером size.
 В случае неудачи возвращает NULL.*/
 void* my_malloc(int size)
@@ -157,6 +162,7 @@ void* my_malloc(int size)
 	if (size <= 0)
 		return NULL;
 	block_list* first_free_block = (block_list*)((char*)heap + sizeof(int));
+	press_system_blocks();
 	/*Если в куче не осталось места*/
 	if (first_free_block->block == NULL)
 	{
@@ -176,6 +182,12 @@ void* my_malloc(int size)
 	{
 		current_occupied_block->next_element = add_system_block(first_free_block, first_occupied_block);
 		current_occupied_block = current_occupied_block->next_element;
+		if (current_occupied_block == NULL)
+			return NULL;
+		if (first_free_block->block == NULL)
+		{
+			return NULL;
+		}
 	}
 
 	block_list* insert_block_list = find_place(first_free_block, size);
@@ -199,8 +211,7 @@ void* merge_blocks(void* first, void* second)
 	return first;
 }
 
-/*Слитие ненужных элементов списков с областями свободной памяти.*/
-void free_system_blocks()
+void press_system_blocks()
 {
 	block_list* first_free_block = (block_list*)((char*)heap + sizeof(int));
 	block_list* first_occupied_block = (block_list*)((char*)heap + size_of_system_data + sizeof(int) * 2);
@@ -245,9 +256,22 @@ void free_system_blocks()
 		current_occupied_block = current_occupied_block->next_element;
 	}
 	current_occupied_block = first_occupied_block;
+}
+
+/*Слитие ненужных элементов списков с областями свободной памяти.*/
+void free_system_blocks()
+{
+	block_list* first_free_block = (block_list*)((char*)heap + sizeof(int));
+	block_list* first_occupied_block = (block_list*)((char*)heap + size_of_system_data + sizeof(int) * 2);
+
+	block_list* current_free_block = first_free_block;
+	block_list* current_occupied_block = first_occupied_block;
+
+	press_system_blocks();
 
 	/*Последний не пустой из блоков свободной памяти.*/
 	block_list* last_not_empty_free_block = first_free_block;
+	//print_memory(first_free_block, first_occupied_block);
 	while (last_not_empty_free_block->next_element != NULL &&
 			last_not_empty_free_block->next_element->block != NULL)
 	{
@@ -337,7 +361,7 @@ void free_system_blocks()
 	return;
 }
 
-int pm(block_list* first_free_block, block_list* first_occupied_block);
+int pm(block_list* first_free_block, block_list* first_occupied_block, int byte = 0);
 
 /*Освобождает память по адресу block. Если память не была зарезервирована, выходит из функции.*/
 void my_free(void* block)
@@ -449,7 +473,9 @@ void my_free_2(void* block)
 	}
 
 	/*Убираем из списка блоков занятой памяти.*/
-	//current_occupied_block->block = NULL;
+	current_occupied_block->block = NULL;
+
+	press_system_blocks();
 
 	block_list* current_free_block = first_free_block;
 
@@ -457,19 +483,61 @@ void my_free_2(void* block)
 	{
 		current_free_block = current_free_block->next_element;
 	}
-	current_free_block->next_element = current_occupied_block;
-	prev_occupied_block->next_element = current_occupied_block->next_element;
-
+	current_occupied_block = first_occupied_block;
+	prev_occupied_block = current_occupied_block;
+	while (current_occupied_block->next_element != NULL)
+	{
+		prev_occupied_block = current_occupied_block;
+		current_occupied_block = current_occupied_block->next_element;
+	}
+	//pm(first_free_block, first_occupied_block);
+	if (current_occupied_block != first_occupied_block)
+	{
+		current_free_block->next_element = current_occupied_block;
+		prev_occupied_block->next_element = NULL;
+		current_occupied_block->next_element = NULL;
+		current_occupied_block->block = block;
+	}
+	else
+	{
+		if (current_free_block->block == NULL)
+		{
+			current_free_block->block = block;
+			current_occupied_block->block = NULL;
+			prev_occupied_block->next_element = NULL;
+		}
+		else
+		{
+			current_free_block->next_element = add_system_block(first_free_block, first_occupied_block);
+			current_free_block = current_free_block->next_element;
+			current_free_block->block = block;
+			current_occupied_block->block = NULL;
+			prev_occupied_block->next_element = NULL;
+		}
+	}
+	//print_memory(first_free_block, first_occupied_block);
+	//pm(first_free_block, first_occupied_block);
 	free_system_blocks();
+	//pm(first_free_block, first_occupied_block);
+	//print_memory(first_free_block, first_occupied_block);
 
 	current_free_block = first_free_block;
 	while (current_free_block != NULL && current_free_block->block != NULL)
 	{
+		if (*((int*)current_free_block->block - 1) == 1110)
+		{
+			cout << "Здесь" << endl;
+		}
+		if (current_free_block->block == (char*)heap + 1450)
+		{
+			cout << "Здесь" << endl;
+		}
 		//int size_of_current_free_block = *((int*)current_free_block->block - 1);
 		block_list* second_free_block = current_free_block->next_element;
 		int flag = 1;
 		while (second_free_block != NULL && second_free_block->block != NULL)
 		{
+			flag = 0;
 			//int size_of_second_free_block = *((int*)second_free_block->block - 1);
 			current_occupied_block = first_occupied_block;
 			while (current_occupied_block != NULL && current_occupied_block->block != NULL)
@@ -505,13 +573,13 @@ void my_free_2(void* block)
 
 		
 		int reverse = 0;
-after_reverse:
+after_reverse: after_sys_merge:
 		if (current_free_block->block < second_free_block->block)
 		{
-			int size_of_current_free_block = *((int*)current_free_block->block - 1);
-			int size_of_second_free_block = *((int*)second_free_block->block - 1);
+	int size_of_current_free_block = *((int*)current_free_block->block - 1);
+	int size_of_second_free_block = *((int*)second_free_block->block - 1);
 
-after_sys_merge:	if ((char*)current_free_block->block + size_of_current_free_block + sizeof(int) ==
+			if ((char*)current_free_block->block + size_of_current_free_block + sizeof(int) ==
 				second_free_block->block)
 			{
 				current_free_block->block = merge_blocks(current_free_block->block, second_free_block->block);
@@ -530,7 +598,7 @@ after_sys_merge:	if ((char*)current_free_block->block + size_of_current_free_blo
 			else
 			{
 				block_list* system_free_block = first_free_block->next_element;
-				block_list* prev_system_free_block = system_free_block;
+				block_list* prev_system_free_block = first_free_block;
 				int is_next_system = 0;
 				while (system_free_block != NULL)
 				{
@@ -540,12 +608,18 @@ after_sys_merge:	if ((char*)current_free_block->block + size_of_current_free_blo
 						is_next_system = 1;
 						break;
 					}
+					if ((system_free_block->block != NULL) && ((char*)current_free_block->block
+						+ size_of_current_free_block + sizeof(int) == (char*)system_free_block->block))
+					{
+						is_next_system = 3;
+						break;
+					}
 					prev_system_free_block = system_free_block;
 					system_free_block = system_free_block->next_element;
 				}
 
 				block_list* system_occupied_block = first_occupied_block->next_element;
-				block_list* prev_system_occupied_block = system_occupied_block;
+				block_list* prev_system_occupied_block = first_occupied_block;
 				while (system_occupied_block != NULL)
 				{
 					if ((char*)current_free_block->block + size_of_current_free_block + sizeof(int) ==
@@ -560,10 +634,30 @@ after_sys_merge:	if ((char*)current_free_block->block + size_of_current_free_blo
 
 				if (is_next_system == 1)
 				{
-					block_list data = *system_free_block;
-					current_free_block->block = merge_blocks(current_free_block->block, system_free_block);
-					prev_system_free_block->next_element = (block_list*)insert_block(current_free_block, size_of_system_data);
-					*(prev_system_free_block->next_element) = data;
+					if (system_free_block->block == current_free_block->block)
+					{
+						//pm(first_free_block, first_occupied_block);
+						//cout << "Здесь";
+						block_list data = *system_free_block;
+						current_free_block->block = merge_blocks(current_free_block->block, system_free_block);
+						prev_system_free_block->next_element = (block_list*)insert_block(current_free_block, size_of_system_data);
+						*(prev_system_free_block->next_element) = data;
+						(prev_system_free_block->next_element->block) = (char*)(prev_system_free_block->next_element->block) + size_of_system_data + sizeof(int);
+						//current_free_block = prev_system_free_block->next_element;
+					}
+					/*else if (system_free_block->block == second_free_block->block)
+					{
+						//cout << "Здесь" << endl;
+					}*/
+					else
+					{
+						block_list data = *system_free_block;
+						current_free_block->block = merge_blocks(current_free_block->block, system_free_block);
+						prev_system_free_block->next_element = (block_list*)insert_block(current_free_block, size_of_system_data);
+						*(prev_system_free_block->next_element) = data;
+					}
+					//pm(first_free_block, first_occupied_block);
+					press_system_blocks();
 					goto after_sys_merge; // Да простит меня бог.
 				}
 				else if (is_next_system == 2)
@@ -572,10 +666,24 @@ after_sys_merge:	if ((char*)current_free_block->block + size_of_current_free_blo
 					current_free_block->block = merge_blocks(current_free_block->block, system_occupied_block);
 					prev_system_occupied_block->next_element = (block_list*)insert_block(current_free_block, size_of_system_data);
 					*(prev_system_occupied_block->next_element) = data;
+					press_system_blocks();
+					goto after_sys_merge; // Да простит меня бог.
+				}
+				else if (is_next_system == 3)
+				{
+					//pm(first_free_block, first_occupied_block);
+					current_free_block->block = merge_blocks(current_free_block->block, system_free_block->block);
+					//current_free_block->block = system_free_block->block;
+					system_free_block->block = NULL;
+					press_system_blocks();
+					//system_free_block->block = NULL;
+					//pm(first_free_block, first_occupied_block);
 					goto after_sys_merge; // Да простит меня бог.
 				}
 				else
 				{
+					print_memory(first_free_block, first_occupied_block);
+					pm(first_free_block, first_occupied_block, (int)((char*)current_free_block->block - heap));
 					cout << "Сюда он никогда не зайдет.";
 					throw "it_was_here";
 				}
@@ -593,16 +701,16 @@ after_sys_merge:	if ((char*)current_free_block->block + size_of_current_free_blo
 
 	}
 	
-
+	press_system_blocks();
 	return;
 
 }
 
-int pm(block_list* first_free_block, block_list* first_occupied_block)
+int pm(block_list* first_free_block, block_list* first_occupied_block, int byte)
 {
 	char ch = 0;
 	int k = 1;
-	for (int i = 0; i < heap_size; i++)
+	for (int i = byte; i < heap_size; i++)
 	{
 		int f = 0;
 		block_list* cf = first_free_block;
@@ -757,7 +865,9 @@ int main()
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 	
-	heap = malloc(heap_size);
+	//heap = malloc(heap_size);
+	for (int i = 0; i < heap_size; i++)
+		heap[i] = 0xCD;
 
 	/*Запись начала списка свободной памяти*/
 	int *pointer = (int*)heap;
@@ -785,32 +895,43 @@ int main()
 
 	print_memory(first_free_block, first_occupied_block);
 	
-	void* a[50];
-	for (int i = 0; i < 5; i++)
+	void* a[5000];
+	for (int i = 0; i < 50; i++)
 	{
 		a[i] = 0;
-		a[i] = my_malloc(10);
-		pm(first_free_block, first_occupied_block);
+		a[i] = my_malloc(1 + rand() % 1000);
+//		if (i > 820)
+//			print_memory(first_free_block, first_occupied_block);
+		//pm(first_free_block, first_occupied_block);
+	}
+	print_memory(first_free_block, first_occupied_block);
+	for (int i = 0; i < 50; i++)
+	{
+		int k = rand() % 50;
+		my_free_2(a[k]);
+		a[k] = my_malloc(1 + rand() % 1000);
 	}
 	print_memory(first_free_block, first_occupied_block);
 	//pm(first_free_block, first_occupied_block);
-	for (int i = 0; i < 5; i++)
+	/*for (int i = 0; i < 50; i++)
 	{
 		my_free_2(a[i]);
+		print_memory(first_free_block, first_occupied_block);
 		//pm(first_free_block, first_occupied_block);
-	}
+	}*/
+	//pm(first_free_block, first_occupied_block);
 	//print_memory(first_free_block, first_occupied_block);
-	for (int i = 0; i < 5; i++)
+	/*for (int i = 0; i < 50; i++)
 	{
 		a[i] = 0;
 		a[i] = my_malloc(10);
-		pm(first_free_block, first_occupied_block);
-	}
+		//pm(first_free_block, first_occupied_block);
+	}*/
 	//print_memory(first_free_block, first_occupied_block);
-	for (int i = 0; i < 2; i++)
+	/*for (int i = 0; i < 50; i++)
 	{
 		my_free_2(a[i]);
-	}
+	}*/
 	//print_memory(first_free_block, first_occupied_block);
 	/*for (int i = 0; i < 50; i++)
 	{
