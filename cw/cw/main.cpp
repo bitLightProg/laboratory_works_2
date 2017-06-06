@@ -42,7 +42,7 @@ struct block_list
 
 void* heap = NULL;
 //char heap[2560];
-int heap_size = 2560*1024;
+int heap_size = 2560;
 int size_of_system_data = sizeof(block_list);
 
 /*Выделяет нужным образом место размера size_of_insert_block в блоке current_free_block.
@@ -76,7 +76,7 @@ block_list* find_place(block_list* first_free_block, int size_of_inset_block)
 {
 	block_list* current_free_block = first_free_block;
 	block_list* returning = NULL;
-	int min_difference = *((int*)current_free_block->block - 1);
+	int min_difference = heap_size;
 	while (current_free_block != NULL && current_free_block->block != NULL)
 	{
 		int size_of_block = *((int*)current_free_block->block - 1);
@@ -459,6 +459,8 @@ void my_free_2(void* block)
 	block_list* first_free_block = (block_list*)((char*)heap + sizeof(int));
 	block_list* first_occupied_block = (block_list*)((char*)heap + size_of_system_data + sizeof(int) * 2);
 
+	
+
 	/*if ((char*)block - (char*)heap >= 21447 && (char*)block - (char*)heap <= 23447)
 	{
 		cout << "Здесь" << endl;
@@ -498,6 +500,12 @@ void my_free_2(void* block)
 		current_occupied_block = current_occupied_block->next_element;
 	}
 	//pm(first_free_block, first_occupied_block);
+	if ((char*)block - (char*)heap == 2496)
+	{
+		cout << "Здесь" << endl;
+		print_memory(first_free_block, first_occupied_block);
+	}
+	
 	if (current_occupied_block != first_occupied_block)
 	{
 		current_free_block->next_element = current_occupied_block;
@@ -717,7 +725,10 @@ after_reverse: after_sys_merge:
 
 
 	}
-	
+	if (*((int*)first_free_block->block - 1) == 32)
+	{
+		cout << "Конец памяти" << endl;
+	}
 	press_system_blocks();
 	return;
 
