@@ -29,6 +29,9 @@ malloc и free. Предусмотреть вывод текущего состояния системы ДРП – адресов и ра
 */
 
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include <Windows.h>
 
 using namespace std;
@@ -42,7 +45,7 @@ struct block_list
 
 void* heap = NULL;
 //char heap[2560];
-int heap_size = 2560;
+int heap_size = 2560*1024;
 int size_of_system_data = sizeof(block_list);
 
 /*Выделяет нужным образом место размера size_of_insert_block в блоке current_free_block.
@@ -133,22 +136,41 @@ int print_memory(block_list* first_free_block, block_list* first_occupied_block)
 	current_occupied_block = first_occupied_block;
 
 	//cout << "Первые " << sizeof(block_list) * 2 + sizeof(int) * 3 << " Байт заняты системными данными." << endl;
-	cout << "Блоки свободной памяти:" << "\t\t\tБлоки занятой памяти:"<< endl;
+	//cout << "Блоки свободной памяти:" << "\t\t\tБлоки занятой памяти:"<< endl;
+	stringstream str1, str2;
+	str1 << "Блоки свободной памяти:";
+	str2 << "Блоки занятой памяти:";
+	cout << setw(21) << str1.str() << setw(5) << " " << setw(21) << str2.str() << endl;
 	
 	for (;current_free_block != NULL || current_occupied_block != NULL;
 		current_free_block != NULL ? current_free_block = current_free_block->next_element: 0,
 			current_occupied_block != NULL ? current_occupied_block = current_occupied_block->next_element: 0)
 	{
+		str1.str(string());
+		str1.clear();
+		str2.str(string());
+		str2.clear();
 		if ((current_free_block != NULL ? current_free_block->block == NULL: 1) && (current_occupied_block != NULL ? current_occupied_block->block == NULL: 1) )
 			break;
 		if ((current_free_block != NULL ? current_free_block->block != NULL : 0))
-			cout << (int*)current_free_block->block << " Б: " << *((int*)current_free_block->block - 1);
+		{
+			
+			str1 << setw(2) << " " <<(int*)current_free_block->block << " Б: " 
+				<< setw(9) << *((int*)current_free_block->block - 1);
+			
+		}
 		if ((current_occupied_block != NULL ? current_occupied_block->block != NULL : 0))
-			cout << "\t\t\t" << (int*)current_occupied_block->block
-			<< " Б: " << *((int*)current_occupied_block->block - 1);
-
+		{
+			
+			str2 << setw(2) << " " << (int*)current_occupied_block->block << " Б: "
+				<< setw(9) << *((int*)current_occupied_block->block - 1);
+			
+		}
+		cout << setw(25) << str1.str();
+		cout << setw(25) << str2.str();
 		cout << endl;
 	}
+	cout << endl << endl << endl;
 	return 0;
 }
 
@@ -197,6 +219,7 @@ void* my_malloc(int size)
 	void* returning_pointer = insert_block(insert_block_list, size);
 	/*Помещаем занятый блок в список.*/
 	current_occupied_block->block = returning_pointer;
+	press_system_blocks();
 	return returning_pointer;
 }
 
@@ -297,6 +320,7 @@ void free_system_blocks()
 		/*По списку свободной памяти.*/
 		for (;this_free_block != NULL;)
 		{
+			int size_of_this_free_block = *((int*)this_free_block - 1);
 			if ((void*)((char*)current_free_block->block + size_of_current_free_block) ==
 				(void*)((int*)this_free_block - 1))
 			{
@@ -308,7 +332,7 @@ void free_system_blocks()
 				//this_free_block = this_free_block->next_element;
 			}
 			else
-			if ((void*)((char*)this_free_block + size_of_system_data) ==
+			if ((void*)((char*)this_free_block + size_of_this_free_block) ==
 				(void*)((int*)current_free_block->block - 1))
 			{
 				current_free_block->block = merge_blocks(this_free_block, current_free_block->block);
@@ -330,6 +354,7 @@ void free_system_blocks()
 		/*По списку занятой памяти*/
 		for (; this_occupied_block != NULL;)
 		{
+			int size_of_this_occupied_block = *((int*)this_occupied_block - 1);
 			if ((void*)((char*)current_free_block->block + size_of_current_free_block) ==
 				(void*)((int*)this_occupied_block - 1))
 			{
@@ -341,7 +366,7 @@ void free_system_blocks()
 				//this_occupied_block = this_occupied_block->next_element;
 			}
 			else
-				if ((void*)((char*)this_occupied_block + size_of_system_data) ==
+				if ((void*)((char*)this_occupied_block + size_of_this_occupied_block) ==
 					(void*)((int*)current_free_block->block - 1))
 				{
 					current_free_block->block = merge_blocks(this_occupied_block, current_free_block->block);
@@ -500,11 +525,11 @@ void my_free_2(void* block)
 		current_occupied_block = current_occupied_block->next_element;
 	}
 	//pm(first_free_block, first_occupied_block);
-	if ((char*)block - (char*)heap == 2496)
+	/*if ((char*)block - (char*)heap == 2496)
 	{
 		cout << "Здесь" << endl;
 		print_memory(first_free_block, first_occupied_block);
-	}
+	}*/
 	
 	if (current_occupied_block != first_occupied_block)
 	{
@@ -725,10 +750,10 @@ after_reverse: after_sys_merge:
 
 
 	}
-	if (*((int*)first_free_block->block - 1) == 32)
+	/*if (*((int*)first_free_block->block - 1) == 32)
 	{
 		cout << "Конец памяти" << endl;
-	}
+	}*/
 	press_system_blocks();
 	return;
 
@@ -924,10 +949,10 @@ int main()
 	print_memory(first_free_block, first_occupied_block);
 	
 	void* a[5000];
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 5000; i++)
 	{
 		a[i] = 0;
-		a[i] = my_malloc(1 + rand() % 1000);
+		a[i] = my_malloc(/*1 + rand() % 1000*/200);
 //		if (i > 820)
 //			print_memory(first_free_block, first_occupied_block);
 		//pm(first_free_block, first_occupied_block);
@@ -935,13 +960,16 @@ int main()
 	print_memory(first_free_block, first_occupied_block);
 	for (int i = 0; i < 500000; i++)
 	{
-		int k = rand() % 50;
+		int k = rand() % 5000;
 		/*if (i > 85)
 			print_memory(first_free_block, first_occupied_block);*/
 		my_free_2(a[k]);
-		a[k] = my_malloc(1 + rand() % 1000);
+		a[k] = my_malloc(/*1 + rand() % 1000*/200);
 	}
+	//free_system_blocks();
+	//pm(first_free_block, first_occupied_block);
 	print_memory(first_free_block, first_occupied_block);
+	//free_system_blocks();
 	//pm(first_free_block, first_occupied_block);
 	/*for (int i = 0; i < 50; i++)
 	{
