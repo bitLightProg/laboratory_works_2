@@ -44,8 +44,11 @@ struct block_list
 
 
 void* heap = NULL;
-int heap_size = 2560;
+int heap_size = 256*1024;
 int size_of_system_data = sizeof(block_list);
+const int max_count = 500;
+int p_count = 0;
+void* p_array[max_count];
 
 /*Выделяет нужным образом место размера size_of_insert_block в блоке current_free_block.
 Возвращает адрес блока, под который выделялась память.*/
@@ -109,9 +112,11 @@ block_list* add_system_block(block_list* &first_free_block, block_list* &first_o
 
 int print_memory(block_list* first_free_block, block_list* first_occupied_block)
 {
+	system("cls");
 	block_list* current_free_block = first_free_block;
 	block_list* current_occupied_block = first_occupied_block;
 	int sys = 0, sizes = 0;
+	cout << p_count << " выделенных блоков из " << max_count << " возможных." << endl;
 	cout << "Адрес начала кучи: " << (int*)first_free_block - 1 << endl;
 	cout << "Под системные данные выделено ";	
 	for (; current_free_block != NULL; current_free_block = current_free_block->next_element)
@@ -168,6 +173,7 @@ int print_memory(block_list* first_free_block, block_list* first_occupied_block)
 		cout << endl;
 	}
 	cout << endl << endl << endl;
+	system("pause");
 	return 0;
 }
 
@@ -382,8 +388,7 @@ int pm(block_list* first_free_block, block_list* first_occupied_block, int byte 
 
 /*Освобождает память по адресу block. Если память не была зарезервирована, выходит из функции.*/
 void my_free(void* block)
-{
-	
+{	
 	/*Если передан нулевой адрес.*/
 	if (block == NULL)
 	{
@@ -413,19 +418,20 @@ void my_free(void* block)
 	press_system_blocks();
 
 	block_list* current_free_block = first_free_block;
-
+	/*Находим крайний из блоков свободной памяти.*/
 	while (current_free_block->next_element != NULL)
 	{
 		current_free_block = current_free_block->next_element;
 	}
 	current_occupied_block = first_occupied_block;
 	prev_occupied_block = current_occupied_block;
+	/*Находим крайний из блоков занятой памяти.*/
 	while (current_occupied_block->next_element != NULL)
 	{
 		prev_occupied_block = current_occupied_block;
 		current_occupied_block = current_occupied_block->next_element;
 	}
-	
+	/*Перекидываем в блоки свободной памяти, если это не первый блок занятой памяти.*/
 	if (current_occupied_block != first_occupied_block)
 	{
 		current_free_block->next_element = current_occupied_block;
@@ -435,6 +441,7 @@ void my_free(void* block)
 	}
 	else
 	{
+		/*Иначе добавляем новый блок свободной памяти и связываем его с освободившимся фрагментом.*/
 		if (current_free_block->block == NULL)
 		{
 			current_free_block->block = block;
@@ -450,18 +457,22 @@ void my_free(void* block)
 			prev_occupied_block->next_element = NULL;
 		}
 	}
+	/*Освобождаем по возможности системные блоки.*/
 	free_system_blocks();
 
 	current_free_block = first_free_block;
 	
+	/*Для каждого из заполненных блоков свободной памяти.*/
 	while (current_free_block != NULL && current_free_block->block != NULL)
 	{
 		block_list* second_free_block = current_free_block->next_element;
 		int flag = 1;
+		/*По всем следующим за ним заполненным блокам свободной памяти.*/
 		while (second_free_block != NULL && second_free_block->block != NULL)
 		{
 			flag = 0;
 			current_occupied_block = first_occupied_block;
+			/*Если между ними нет выделенной памяти, то их можно слить.*/
 			while (current_occupied_block != NULL && current_occupied_block->block != NULL)
 			{
 				current_free_block->block > second_free_block->block ?
@@ -491,19 +502,21 @@ void my_free(void* block)
 		}
 
 
-		
+		/*Начало сливания.*/
 		int reverse = 0;
-after_reverse: after_sys_merge:
+	after_reverse: after_sys_merge:
+		/*Если они стоят не по возрастанию, то просто перекидываем указатели.*/
 		if (current_free_block->block < second_free_block->block)
 		{
 			int size_of_current_free_block = *((int*)current_free_block->block - 1);
 			int size_of_second_free_block = *((int*)second_free_block->block - 1);
-
+			/*Если за этим блоком сразу идёт второй блок.*/
 			if ((char*)current_free_block->block + size_of_current_free_block + sizeof(int) ==
 				second_free_block->block)
 			{
 				current_free_block->block = merge_blocks(current_free_block->block, second_free_block->block);
 				second_free_block->block = NULL;
+				/*Перекидываем указатели обратно.*/
 				if (reverse == 1)
 				{
 					reverse = 0;
@@ -515,6 +528,7 @@ after_reverse: after_sys_merge:
 				current_free_block = first_free_block;
 				continue;
 			}
+			/*Если дальше системный блок.*/
 			else
 			{
 				block_list* system_free_block = first_free_block->next_element;
@@ -552,8 +566,17 @@ after_reverse: after_sys_merge:
 					system_occupied_block = system_occupied_block->next_element;
 				}
 
+				/*Если это блок свободной памяти.*/
 				if (is_next_system == 1)
 				{
+					/*Если этот блок ни на что не указывает, сжираем его.*/
+					if (system_free_block->block == NULL)
+					{
+						prev_system_free_block->next_element = system_free_block->next_element;
+						current_free_block->block = merge_blocks(current_free_block->block, system_free_block);
+						goto after_sys_merge;
+					}
+					/*Если системный блок указывает на текущий блок.*/
 					if (system_free_block->block == current_free_block->block)
 					{
 						block_list data = *system_free_block;
@@ -563,6 +586,7 @@ after_reverse: after_sys_merge:
 						(prev_system_free_block->next_element->block) = (char*)(prev_system_free_block->next_element->block) + size_of_system_data + sizeof(int);
 						current_free_block = prev_system_free_block->next_element;
 					}
+					/*Иначе просто помещаем его перед текущим блоком, который сдвигаем вперед.*/
 					else
 					{
 						block_list data = *system_free_block;
@@ -570,16 +594,25 @@ after_reverse: after_sys_merge:
 						prev_system_free_block->next_element = (block_list*)insert_block(current_free_block, size_of_system_data);
 						*(prev_system_free_block->next_element) = data;
 					}
+					/*На случай, если системный блок указывал на второй свободный блок(адресация может измениться, но это не точно).*/
 					if (second_free_block == system_free_block)
 					{
 						second_free_block = prev_system_free_block->next_element;
 					}
-					system_free_block = prev_system_free_block->next_element;
 					press_system_blocks();
 					goto after_sys_merge; // Да простит меня бог.
 				}
+				/*Если следующий блок - системный блок занятой памяти.*/
 				else if (is_next_system == 2)
 				{
+					/*Если этот блок ни на что не указывает, сжираем его.*/
+					if (system_occupied_block->block == NULL)
+					{
+						prev_system_occupied_block->next_element = system_occupied_block->next_element;
+						current_free_block->block = merge_blocks(current_free_block->block, system_occupied_block);
+						goto after_sys_merge;
+					}
+					/*Переносим блок.*/
 					block_list data = *system_occupied_block;
 					current_free_block->block = merge_blocks(current_free_block->block, system_occupied_block);
 					prev_system_occupied_block->next_element = (block_list*)insert_block(current_free_block, size_of_system_data);
@@ -587,8 +620,10 @@ after_reverse: after_sys_merge:
 					press_system_blocks();
 					goto after_sys_merge; // Да простит меня бог.
 				}
+				/*Если впереди находится другой свободный блок(не тот, к которому мы движемся).*/
 				else if (is_next_system == 3)
 				{
+					/*Сжираем его.*/
 					current_free_block->block = merge_blocks(current_free_block->block, system_free_block->block);
 					system_free_block->block = NULL;
 					press_system_blocks();
@@ -603,6 +638,7 @@ after_reverse: after_sys_merge:
 				}
 			}
 		}
+		/*Здесь перекидываются указатели.*/
 		else if (current_free_block->block > second_free_block->block)
 		{
 			reverse = 1;
@@ -764,6 +800,97 @@ int pm(block_list* first_free_block, block_list* first_occupied_block, int byte)
 	return 0;
 }
 
+
+int free_all()
+{
+	system("cls");
+	p_count = 0;
+	block_list* first_free_block = (block_list*)((char*)heap + sizeof(int));
+	block_list* first_occupied_block = (block_list*)((char*)heap + size_of_system_data + sizeof(int) * 2);
+
+	first_free_block->next_element = NULL;
+	first_occupied_block->next_element = NULL;
+	first_occupied_block->block = NULL;
+
+	int* pointer;
+	/*Запись ссылки на первый блок свободной памяти*/
+	first_free_block->block = first_occupied_block + 1;
+	pointer = (int*)first_free_block->block;
+	*pointer = heap_size - (sizeof(block_list) * 2 + sizeof(int) * 3);
+	first_free_block->block = pointer + 1;
+	cout << "Память освобождена." << endl;
+	system("pause");
+	return 0;
+}
+
+int add_blocks()
+{
+	system("cls");
+	cout << "Введите количество k блоков." << endl;
+	int k;
+	cin >> k;
+	if (k <= 0)
+	{
+		cout << "Нет." << endl;
+		system("pause");
+		return 0;
+	}
+	cout << "Введите диапазон размеров блоков(пример, 20-30; пример, 8-8)." << endl;
+	char ch;
+	int s1, s2;
+	cin >> s1 >> ch >> s2;
+	srand(time(NULL));
+	for (int i = p_count; i < p_count + k; i++)
+	{
+		if (s1 != s2)
+		{
+			p_array[i] = my_malloc(s1 + (rand() % (s2 - s1))); 
+		}
+		else
+		{
+			p_array[i] = my_malloc(s1);
+		}
+	}
+	p_count += k;
+	return 0;
+}
+
+int remap_blocks()
+{
+	system("cls");
+	if (p_count == 0)
+		return 0;
+	cout << "Введите количество k запросов." << endl;
+	int k;
+	cin >> k;
+	if (k <= 0)
+	{
+		cout << "Нет." << endl;
+		system("pause");
+		return 0;
+	}
+	cout << "Введите диапазон размеров блоков(пример, 20-30; пример, 8-8)." << endl;
+	char ch;
+	int s1, s2;
+	cin >> s1 >> ch >> s2;
+	srand(time(NULL));
+	for (int i = 0; i < k; i++)
+	{
+		int a = rand() % p_count;
+		my_free(p_array[a]);
+		if (s1 != s2)
+		{
+			p_array[a] = my_malloc(s1 + (rand() % (s2 - s1)));
+		}
+		else
+		{
+			p_array[a] = my_malloc(s1);
+		}
+	}
+	p_count += k;
+	return 0;
+}
+
 int main()
 {
 	SetConsoleCP(1251);
@@ -795,22 +922,40 @@ int main()
 	*pointer = heap_size - (sizeof(block_list) * 2 + sizeof(int) * 3);
 	first_free_block->block = pointer + 1;
 
-	print_memory(first_free_block, first_occupied_block);
-	
-	void* a[5000];
-	for (int i = 0; i < 5000; i++)
+
+	while (true)
 	{
-		a[i] = 0;
-		a[i] = my_malloc(/*1 + rand() % 1000*/200);
+		system("cls");
+		cout << "1. Выделить k блоков памяти." << endl
+			<< "2. Вывести состояние системы." << endl
+			<< "3. Переназначить блоки(k запросов на освобождение и запись)." << endl
+			<< "4. Освободить всю память." << endl
+			<< "0. Выйти из программы." << endl;
+
+		char ch;
+		cin >> ch;
+		if (ch == '0')
+		{
+			free(heap);
+			return 0;
+		}
+		else if (ch == '1')
+		{
+			add_blocks();
+		}
+		else if (ch == '2')
+		{
+			print_memory(first_free_block, first_occupied_block);
+		}
+		else if (ch == '3')
+		{
+			remap_blocks();
+		}
+		else if (ch == '4')
+		{
+			free_all();
+		}
 	}
-	print_memory(first_free_block, first_occupied_block);
-	for (int i = 0; i < 25000; i++)
-	{
-		int k = rand() % 5000;
-		my_free(a[k]);
-		a[k] = my_malloc(1 + rand() % 100);
-	}
-	print_memory(first_free_block, first_occupied_block);
 
 	free(heap);
 	system("pause");
