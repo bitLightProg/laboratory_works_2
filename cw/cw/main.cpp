@@ -49,6 +49,8 @@ int size_of_system_data = sizeof(block_list);
 const int max_count = 500;
 int p_count = 0;
 void* p_array[max_count];
+time_t t1, t2;
+SYSTEMTIME* s1, s2;
 
 /*Выделяет нужным образом место размера size_of_insert_block в блоке current_free_block.
 Возвращает адрес блока, под который выделялась память.*/
@@ -117,8 +119,6 @@ int print_memory(block_list* first_free_block, block_list* first_occupied_block)
 	block_list* current_occupied_block = first_occupied_block;
 	int sys = 0, sizes = 0;
 	cout << p_count << " выделенных блоков из " << max_count << " возможных." << endl;
-	cout << "Адрес начала кучи: " << (int*)first_free_block - 1 << endl;
-	cout << "Под системные данные выделено ";	
 	for (; current_free_block != NULL; current_free_block = current_free_block->next_element)
 	{
 		sys++;
@@ -126,6 +126,9 @@ int print_memory(block_list* first_free_block, block_list* first_occupied_block)
 		if (current_free_block->block != NULL)
 			sizes++;
 	}
+	cout << sys << " блоков свободной памяти." << endl;
+	cout << "Адрес начала кучи: " << (int*)first_free_block - 1 << endl;
+	cout << "Под системные данные выделено ";		
 	for (; current_occupied_block != NULL; current_occupied_block = current_occupied_block->next_element)
 	{
 		sys++;
@@ -839,8 +842,12 @@ int add_blocks()
 	char ch;
 	int s1, s2;
 	cin >> s1 >> ch >> s2;
+
+	SYSTEMTIME st1, st2;
+	GetLocalTime(&st1);
+
 	srand(time(NULL));
-	for (int i = p_count; i < p_count + k; i++)
+	for (int i = p_count; i < p_count + k && i < max_count; i++)
 	{
 		if (s1 != s2)
 		{
@@ -852,6 +859,12 @@ int add_blocks()
 		}
 	}
 	p_count += k;
+	if (p_count > 500)
+		p_count = 500;
+
+	GetLocalTime(&st2);
+	cout << (st2.wSecond - st1.wSecond)*1000 + st2.wMilliseconds - st1.wMilliseconds << endl;
+	
 	return 0;
 }
 
@@ -873,6 +886,10 @@ int remap_blocks()
 	char ch;
 	int s1, s2;
 	cin >> s1 >> ch >> s2;
+
+	SYSTEMTIME st1, st2;
+	GetLocalTime(&st1);
+
 	srand(time(NULL));
 	for (int i = 0; i < k; i++)
 	{
@@ -887,7 +904,9 @@ int remap_blocks()
 			p_array[a] = my_malloc(s1);
 		}
 	}
-	p_count += k;
+	
+	GetLocalTime(&st2);
+	cout << (st2.wSecond - st1.wSecond) * 1000 + st2.wMilliseconds - st1.wMilliseconds << endl;
 	return 0;
 }
 
@@ -942,6 +961,7 @@ int main()
 		else if (ch == '1')
 		{
 			add_blocks();
+			system("pause");
 		}
 		else if (ch == '2')
 		{
@@ -950,6 +970,7 @@ int main()
 		else if (ch == '3')
 		{
 			remap_blocks();
+			system("pause");
 		}
 		else if (ch == '4')
 		{
