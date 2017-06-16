@@ -42,7 +42,6 @@ struct block_list
 	void* block = NULL;
 };
 
-
 void* heap = NULL;
 int heap_size = 256 * 1024 * 1024;
 int size_of_system_data = sizeof(block_list);
@@ -304,7 +303,6 @@ void* merge_blocks(void* first, void* second)
 	*((int*)first - 1) = first_size + second_size + 4;
 	return first;
 }
-
 
 /*Слитие ненужных элементов списков с областями свободной памяти.*/
 void free_system_blocks()
@@ -889,8 +887,8 @@ int add_blocks()
 		}
 	}
 	p_count += k;
-	if (p_count > 500)
-		p_count = 500;
+	if (p_count > max_count)
+		p_count = max_count;
 
 	GetLocalTime(&st2);
 	cout << ((st2.wMinute - st1.wMinute)*60 + st2.wSecond - st1.wSecond)*1000 + st2.wMilliseconds - st1.wMilliseconds << endl;
@@ -971,7 +969,6 @@ int main()
 	pointer = (int*)first_free_block->block;
 	*pointer = heap_size - (sizeof(block_list) * 2 + sizeof(int) * 3);
 	first_free_block->block = pointer + 1;
-
 
 	while (true)
 	{
